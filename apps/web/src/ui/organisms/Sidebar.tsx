@@ -1,10 +1,11 @@
 import { NavLink } from 'react-router';
-import { LayoutDashboard, BookOpen, Users, BookMarked, Settings } from 'lucide-react';
+import { LayoutDashboard, BookOpen, Users, BookMarked, Building2, Settings } from 'lucide-react';
 
 const NAV_ITEMS = [
   { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { to: '/books', icon: BookOpen, label: 'Libros' },
   { to: '/authors', icon: Users, label: 'Autores' },
+  { to: '/publishers', icon: Building2, label: 'Editoriales' },
   { to: '/genres', icon: BookMarked, label: 'Géneros' },
   { to: '/settings', icon: Settings, label: 'Configuración' },
 ];

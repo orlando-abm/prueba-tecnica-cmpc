@@ -3,6 +3,7 @@ import LoginPage from './pages/login/LoginPage';
 import AppLayout from './ui/layouts/AppLayout';
 import GenresPage from './pages/genres/GenresPage';
 import AuthorsPage from './pages/authors/AuthorsPage';
+import PublishersPage from './pages/publishers/PublishersPage';
 
 export default function App() {
   return (
@@ -13,6 +14,7 @@ export default function App() {
           <Route index element={<Navigate to="/genres" replace />} />
           <Route path="/genres" element={<GenresPage />} />
           <Route path="/authors" element={<AuthorsPage />} />
+          <Route path="/publishers" element={<PublishersPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

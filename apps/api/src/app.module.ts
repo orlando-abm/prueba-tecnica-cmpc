@@ -8,6 +8,7 @@ import { UsersModule } from '@/modules/users/users.module.js';
 import { AuthModule } from '@/modules/auth/auth.module.js';
 import { GenresModule } from '@/modules/genres/genres.module.js';
 import { AuthorsModule } from '@/modules/authors/authors.module.js';
+import { PublishersModule } from '@/modules/publishers/publishers.module.js';
 import { CorrelationIdMiddleware } from '@/common/middlewares/correlation-id.middleware.js';
 import { loggerConfig } from '@/config/logger.config.js';
 import { validateEnv } from '@/config/env.config.js';
@@ -21,6 +22,7 @@ import { validateEnv } from '@/config/env.config.js';
     AuthModule,
     GenresModule,
     AuthorsModule,
+    PublishersModule,
   ],
   controllers: [AppController],
   providers: [AppService],
