@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query'
 import { genresService } from '@/services/genres.service'
 import type { GenreBodyDto, GenreFilters } from '@repo/shared/schemas/genre.schema'
 import type { Genre } from '@repo/shared/types/genre.types'
@@ -19,6 +19,7 @@ export function useGenres(filters: Partial<GenreFilters> = {}) {
   return useQuery({
     queryKey: [GENRES_KEY, filters],
     queryFn: () => genresService.findAll(filters),
+    placeholderData: keepPreviousData,
   })
 }
 

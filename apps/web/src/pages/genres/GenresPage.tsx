@@ -8,7 +8,7 @@ import { useGenres, useCreateGenre, useUpdateGenre, useDeleteGenre, useRestoreGe
 import { useDebounce } from '@/hooks/useDebounce'
 import { useGenreColumns } from './useGenreColumns'
 import { Button, Input, Modal, Select, ConfirmModal } from '@/ui/atoms'
-import { Table } from '@/ui/organisms'
+import { Table, Pagination } from '@/ui/organisms'
 import { ApiError } from '@/lib/http'
 
 type ModalState =
@@ -32,6 +32,7 @@ const STATUS_OPTIONS: { value: StatusFilter; label: string }[] = [
 export default function GenresPage() {
   const [search, setSearch] = useState('')
   const [page, setPage]     = useState(1)
+  const [limit, setLimit]   = useState(20)
   const [status, setStatus] = useState<StatusFilter>('active')
   const [modal, setModal]     = useState<ModalState>({ mode: 'closed' })
   const [confirm, setConfirm] = useState<ConfirmState>({ mode: 'closed' })
@@ -39,7 +40,7 @@ export default function GenresPage() {
   const debouncedSearch = useDebounce(search, 400)
   const activeSearch    = debouncedSearch.length >= 3 ? debouncedSearch : undefined
 
-  const { data, isLoading } = useGenres({ search: activeSearch, page, limit: 20, status })
+  const { data, isLoading } = useGenres({ search: activeSearch, page, limit, status })
   const createGenre = useCreateGenre()
   const updateGenre = useUpdateGenre()
   const deleteGenre   = useDeleteGenre()
@@ -90,9 +91,10 @@ export default function GenresPage() {
     setStatus('active')
     setSearch('')
     setPage(1)
+    setLimit(20)
   }
 
-  const hasFilters = status !== 'active' || search.length >= 3
+  const hasFilters = status !== 'active' || debouncedSearch.length >= 3
 
   const columns = useGenreColumns({
     onEdit:    openEdit,
@@ -133,9 +135,6 @@ export default function GenresPage() {
               }
               className="rounded-full"
             />
-            {search.length > 0 && search.length < 3 && (
-              <p className="text-[11px] font-sans text-text-secondary mt-1 pl-1">Escribe al menos 3 caracteres</p>
-            )}
           </div>
 
           {/* Status select */}
@@ -152,15 +151,15 @@ export default function GenresPage() {
         {hasFilters && (
           <div className="flex items-center gap-2 flex-wrap">
             {status !== 'active' && (
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-accent-light border border-accent/20 text-xs font-semibold font-sans text-accent">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-purple-bg border border-purple-text/20 text-xs font-semibold font-sans text-purple-text">
                 {STATUS_OPTIONS.find(o => o.value === status)?.label}
                 <button onClick={() => { setStatus('active'); setPage(1) }} className="cursor-pointer hover:opacity-70">
                   <X size={11} />
                 </button>
               </span>
             )}
-            {search.length >= 3 && (
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-accent-light border border-accent/20 text-xs font-semibold font-sans text-accent">
+            {debouncedSearch.length >= 3 && (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-info-bg border border-info/20 text-xs font-semibold font-sans text-info-text">
                 "{debouncedSearch}"
                 <button onClick={() => { setSearch(''); setPage(1) }} className="cursor-pointer hover:opacity-70">
                   <X size={11} />
@@ -189,13 +188,17 @@ export default function GenresPage() {
         )}
       </div>
 
-      {/* Pagination — dentro del mismo bloque */}
-      {data && data.totalPages > 1 && (
-        <div className="flex items-center justify-end gap-2">
-          <Button variant="ghost" disabled={page === 1} onClick={() => setPage(p => p - 1)}>Anterior</Button>
-          <span className="font-sans text-sm text-text-secondary">{page} / {data.totalPages}</span>
-          <Button variant="ghost" disabled={page === data.totalPages} onClick={() => setPage(p => p + 1)}>Siguiente</Button>
-        </div>
+      {/* Pagination */}
+      {data && (
+        <Pagination
+          page={page}
+          totalPages={data.totalPages}
+          total={data.total}
+          limit={limit}
+          onPageChange={setPage}
+          onLimitChange={setLimit}
+          itemLabel="géneros"
+        />
       )}
       </div>
 

@@ -1,7 +1,8 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Logger, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import type { Genre } from '@prisma/client';
 import type { PaginatedResponse } from '@repo/shared/types/pagination.types';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { JwtAuthGuard } from '@/modules/auth/guards/jwt.guard.js';
 import { GenresService } from './genres.service.js';
 import { GenreFiltersDto, GenreBodyDto } from './genres.schema.js';
@@ -10,21 +11,23 @@ import { FindAllGenresDoc, FindGenreByIdDoc, CreateGenreDoc, UpdateGenreDoc, Del
 @ApiTags('Genres')
 @Controller('genres')
 export class GenresController {
-  private readonly logger = new Logger(GenresController.name);
-
-  constructor(private readonly genresService: GenresService) {}
+  constructor(
+    @InjectPinoLogger(GenresController.name)
+    private readonly logger: PinoLogger,
+    private readonly genresService: GenresService,
+  ) {}
 
   @Get()
   @FindAllGenresDoc()
   findAll(@Query() filters: GenreFiltersDto): Promise<PaginatedResponse<Genre>> {
-    this.logger.log('GET /genres');
+    this.logger.info('GET /genres');
     return this.genresService.findAll(filters);
   }
 
   @Get(':id')
   @FindGenreByIdDoc()
   findById(@Param('id') id: string): Promise<Genre> {
-    this.logger.log(`GET /genres/${id}`);
+    this.logger.info(`GET /genres/${id}`);
     return this.genresService.findById(id);
   }
 
@@ -34,7 +37,7 @@ export class GenresController {
   @HttpCode(HttpStatus.CREATED)
   @CreateGenreDoc()
   create(@Body() dto: GenreBodyDto): Promise<Genre> {
-    this.logger.log('POST /genres');
+    this.logger.info('POST /genres');
     return this.genresService.create(dto.name);
   }
 
@@ -43,7 +46,7 @@ export class GenresController {
   @ApiBearerAuth()
   @UpdateGenreDoc()
   update(@Param('id') id: string, @Body() dto: GenreBodyDto): Promise<Genre> {
-    this.logger.log(`PATCH /genres/${id}`);
+    this.logger.info(`PATCH /genres/${id}`);
     return this.genresService.update(id, dto.name);
   }
 
@@ -52,7 +55,7 @@ export class GenresController {
   @ApiBearerAuth()
   @RestoreGenreDoc()
   restore(@Param('id') id: string): Promise<Genre> {
-    this.logger.log(`PATCH /genres/${id}/restore`);
+    this.logger.info(`PATCH /genres/${id}/restore`);
     return this.genresService.restore(id);
   }
 
@@ -62,7 +65,7 @@ export class GenresController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @DeleteGenreDoc()
   async softDelete(@Param('id') id: string): Promise<void> {
-    this.logger.log(`DELETE /genres/${id}`);
+    this.logger.info(`DELETE /genres/${id}`);
     await this.genresService.softDelete(id);
   }
 }

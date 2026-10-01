@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import type { Genre } from '@prisma/client';
 import type { PaginatedResponse } from '@repo/shared/types/pagination.types';
@@ -66,7 +66,7 @@ export class GenresService {
     const genre = await this.genres.findByIdDeleted(id);
     if (!genre) {
       this.logger.warn({ id, code: GENRE_ERRORS.NOT_DELETED.code }, 'Restaurar fallido — género no está eliminado');
-      throw new BadRequestException(GENRE_ERRORS.NOT_DELETED);
+      throw new NotFoundException(GENRE_ERRORS.NOT_DELETED);
     }
     const restored = await this.genres.restore(id);
     this.logger.info({ genreId: id }, 'Género restaurado');

@@ -40,7 +40,7 @@ export class GenresRepository {
 
   findByName(name: string): Promise<Genre | null> {
     return this.prisma.genre.findFirst({
-      where: { name: { equals: name, mode: 'insensitive' }, deletedAt: null },
+      where: { name: { equals: name, mode: 'insensitive' } },
     });
   }
 

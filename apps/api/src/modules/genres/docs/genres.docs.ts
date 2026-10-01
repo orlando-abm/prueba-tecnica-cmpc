@@ -3,7 +3,7 @@ import { ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse } from '@nestjs/
 import { GENRE_ERRORS } from '../genres.errors.js';
 import { COMMON_ERRORS } from '@common/errors/common.errors.js';
 
-const genreExample = { id: 'uuid', name: 'Ficción' };
+const genreExample = { id: '3f2504e0-4f89-11d3-9a0c-0305e82c3301', name: 'Ficción', createdAt: '2024-01-15T10:00:00.000Z', updatedAt: '2024-01-15T10:00:00.000Z', deletedAt: null };
 const bodySchema = { example: { name: 'Ficción' } };
 const validationError = { success: false, error: { ...COMMON_ERRORS.VALIDATION_ERROR, message: 'name: El nombre es requerido' } };
 const notFound = { success: false, error: GENRE_ERRORS.NOT_FOUND };
