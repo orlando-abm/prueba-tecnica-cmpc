@@ -1,4 +1,4 @@
-import { CorsOptions } from '@nestjs/common/interfaces/external/cors-options.interface';
+import type { CorsOptions } from '@nestjs/common/interfaces/external/cors-options.interface';
 
 export const corsConfig: CorsOptions = {
   origin: process.env.CORS_ORIGIN?.split(',') ?? '*',

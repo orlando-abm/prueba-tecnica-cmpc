@@ -3,9 +3,18 @@ import { ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse } from '@nestjs/
 import { AUTHOR_ERRORS } from '../authors.errors.js';
 import { COMMON_ERRORS } from '@common/errors/common.errors.js';
 
-const authorExample = { id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890', name: 'Gabriel García Márquez', createdAt: '2024-01-15T10:00:00.000Z', updatedAt: '2024-01-15T10:00:00.000Z', deletedAt: null };
+const authorExample = {
+  id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
+  name: 'Gabriel García Márquez',
+  createdAt: '2024-01-15T10:00:00.000Z',
+  updatedAt: '2024-01-15T10:00:00.000Z',
+  deletedAt: null,
+};
 const bodySchema = { example: { name: 'Gabriel García Márquez' } };
-const validationError = { success: false, error: { ...COMMON_ERRORS.VALIDATION_ERROR, message: 'name: El nombre es requerido' } };
+const validationError = {
+  success: false,
+  error: { ...COMMON_ERRORS.VALIDATION_ERROR, message: 'name: El nombre es requerido' },
+};
 const notFound = { success: false, error: AUTHOR_ERRORS.NOT_FOUND };
 const duplicate = { success: false, error: AUTHOR_ERRORS.DUPLICATE };
 
@@ -13,15 +22,39 @@ export const FindAllAuthorsDoc = () =>
   applyDecorators(
     ApiOperation({ summary: 'Listar autores' }),
     ApiQuery({ name: 'search', required: false, description: 'Filtrar por nombre' }),
-    ApiQuery({ name: 'status', required: false, enum: ['active', 'inactive', 'all'], description: 'Estado del autor (default: active)' }),
-    ApiQuery({ name: 'sortBy', required: false, enum: ['name', 'createdAt'], description: 'Campo de ordenamiento (default: name)' }),
-    ApiQuery({ name: 'order', required: false, enum: ['asc', 'desc'], description: 'Dirección del ordenamiento (default: asc)' }),
+    ApiQuery({
+      name: 'status',
+      required: false,
+      enum: ['active', 'inactive', 'all'],
+      description: 'Estado del autor (default: active)',
+    }),
+    ApiQuery({
+      name: 'sortBy',
+      required: false,
+      enum: ['name', 'createdAt'],
+      description: 'Campo de ordenamiento (default: name)',
+    }),
+    ApiQuery({
+      name: 'order',
+      required: false,
+      enum: ['asc', 'desc'],
+      description: 'Dirección del ordenamiento (default: asc)',
+    }),
     ApiQuery({ name: 'page', required: false, description: 'Página (default: 1)' }),
-    ApiQuery({ name: 'limit', required: false, description: 'Resultados por página (default: 20, max: 100)' }),
+    ApiQuery({
+      name: 'limit',
+      required: false,
+      description: 'Resultados por página (default: 20, max: 100)',
+    }),
     ApiResponse({
       status: HttpStatus.OK,
       description: 'Listado de autores',
-      schema: { example: { success: true, data: { items: [authorExample], total: 1, page: 1, limit: 20, totalPages: 1 } } },
+      schema: {
+        example: {
+          success: true,
+          data: { items: [authorExample], total: 1, page: 1, limit: 20, totalPages: 1 },
+        },
+      },
     }),
   );
 

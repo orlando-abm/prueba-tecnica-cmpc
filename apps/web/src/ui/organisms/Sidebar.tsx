@@ -1,13 +1,13 @@
-import { NavLink } from 'react-router'
-import { LayoutDashboard, BookOpen, Users, BookMarked, Settings } from 'lucide-react'
+import { NavLink } from 'react-router';
+import { LayoutDashboard, BookOpen, Users, BookMarked, Settings } from 'lucide-react';
 
 const NAV_ITEMS = [
   { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-  { to: '/books',     icon: BookOpen,        label: 'Libros' },
-  { to: '/authors',   icon: Users,           label: 'Autores' },
-  { to: '/genres',    icon: BookMarked,      label: 'Géneros' },
-  { to: '/settings',  icon: Settings,        label: 'Configuración' },
-]
+  { to: '/books', icon: BookOpen, label: 'Libros' },
+  { to: '/authors', icon: Users, label: 'Autores' },
+  { to: '/genres', icon: BookMarked, label: 'Géneros' },
+  { to: '/settings', icon: Settings, label: 'Configuración' },
+];
 
 export function Sidebar() {
   return (
@@ -46,10 +46,12 @@ export function Sidebar() {
           <span className="text-white text-xs font-bold font-sans">A</span>
         </div>
         <div className="flex flex-col min-w-0">
-          <span className="text-text-primary-dark text-xs font-semibold font-sans truncate">Admin CMPC</span>
+          <span className="text-text-primary-dark text-xs font-semibold font-sans truncate">
+            Admin CMPC
+          </span>
           <span className="text-text-secondary-dark text-[11px] font-sans">Administrador</span>
         </div>
       </div>
     </aside>
-  )
+  );
 }

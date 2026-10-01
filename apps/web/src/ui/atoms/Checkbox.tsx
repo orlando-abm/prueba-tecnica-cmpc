@@ -1,10 +1,10 @@
-import { Check } from 'lucide-react'
+import { Check } from 'lucide-react';
 
 interface CheckboxProps {
-  label?: string
-  checked: boolean
-  onChange: (checked: boolean) => void
-  id?: string
+  label?: string;
+  checked: boolean;
+  onChange: (checked: boolean) => void;
+  id?: string;
 }
 
 export function Checkbox({ label, checked, onChange, id }: CheckboxProps) {
@@ -21,10 +21,10 @@ export function Checkbox({ label, checked, onChange, id }: CheckboxProps) {
         id={id}
         type="checkbox"
         checked={checked}
-        onChange={e => onChange(e.target.checked)}
+        onChange={(e) => onChange(e.target.checked)}
         className="sr-only"
       />
       {label && <span className="font-sans text-[13px] text-text-primary">{label}</span>}
     </label>
-  )
+  );
 }

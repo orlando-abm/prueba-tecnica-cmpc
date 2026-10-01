@@ -1,0 +1,22 @@
+{
+  "root": false,
+  "$schema": "https://biomejs.dev/schemas/2.5.15/schema.json",
+  "extends": ["../../biome.json"],
+  "javascript": {
+    "parser": {
+      "unsafeParameterDecoratorsEnabled": true
+    },
+    "formatter": {
+      "quoteStyle": "single",
+      "trailingCommas": "all",
+      "semicolons": "always"
+    }
+  },
+  "linter": {
+    "rules": {
+      "style": {
+        "useImportType": "off"
+      }
+    }
+  }
+}

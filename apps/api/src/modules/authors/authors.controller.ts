@@ -1,12 +1,31 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Patch,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import type { Author } from '@prisma/client';
 import type { PaginatedResponse } from '@repo/shared/types/pagination.types';
-import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
+import { InjectPinoLogger, type PinoLogger } from 'nestjs-pino';
 import { JwtAuthGuard } from '@/modules/auth/guards/jwt.guard.js';
 import { AuthorsService } from './authors.service.js';
 import { AuthorFiltersDto, AuthorBodyDto } from './authors.schema.js';
-import { FindAllAuthorsDoc, FindAuthorByIdDoc, CreateAuthorDoc, UpdateAuthorDoc, DeleteAuthorDoc, RestoreAuthorDoc } from './docs/authors.docs.js';
+import {
+  FindAllAuthorsDoc,
+  FindAuthorByIdDoc,
+  CreateAuthorDoc,
+  UpdateAuthorDoc,
+  DeleteAuthorDoc,
+  RestoreAuthorDoc,
+} from './docs/authors.docs.js';
 
 @ApiTags('Authors')
 @Controller('authors')

@@ -1,5 +1,5 @@
-import { CallHandler, ExecutionContext, NestInterceptor } from '@nestjs/common';
-import { Observable, map } from 'rxjs';
+import type { CallHandler, ExecutionContext, NestInterceptor } from '@nestjs/common';
+import { type Observable, map } from 'rxjs';
 import type { Response } from 'express';
 
 export class ResponseInterceptor implements NestInterceptor {

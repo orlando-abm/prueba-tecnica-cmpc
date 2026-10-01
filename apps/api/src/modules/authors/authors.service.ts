@@ -1,5 +1,10 @@
-import { Injectable, NotFoundException, ConflictException, BadRequestException } from '@nestjs/common';
-import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+  BadRequestException,
+} from '@nestjs/common';
+import { InjectPinoLogger, type PinoLogger } from 'nestjs-pino';
 import type { Author } from '@prisma/client';
 import type { PaginatedResponse } from '@repo/shared/types/pagination.types';
 import { AuthorsRepository } from './authors.repository.js';
@@ -33,7 +38,8 @@ export class AuthorsService {
     this.logger.info({ name }, 'Crear autor');
     const existing = await this.authors.findByName(name);
     if (existing) {
-      const error = existing.deletedAt !== null ? AUTHOR_ERRORS.DUPLICATE_DELETED : AUTHOR_ERRORS.DUPLICATE;
+      const error =
+        existing.deletedAt !== null ? AUTHOR_ERRORS.DUPLICATE_DELETED : AUTHOR_ERRORS.DUPLICATE;
       this.logger.warn({ name, code: error.code }, 'Crear fallido — autor ya existe');
       throw new ConflictException(error);
     }
@@ -47,7 +53,8 @@ export class AuthorsService {
     await this.findById(id);
     const existing = await this.authors.findByName(name);
     if (existing && existing.id !== id) {
-      const error = existing.deletedAt !== null ? AUTHOR_ERRORS.DUPLICATE_DELETED : AUTHOR_ERRORS.DUPLICATE;
+      const error =
+        existing.deletedAt !== null ? AUTHOR_ERRORS.DUPLICATE_DELETED : AUTHOR_ERRORS.DUPLICATE;
       this.logger.warn({ id, name, code: error.code }, 'Actualizar fallido — autor ya existe');
       throw new ConflictException(error);
     }
@@ -60,11 +67,17 @@ export class AuthorsService {
     this.logger.info({ id }, 'Eliminar autor');
     const author = await this.authors.findByIdRaw(id);
     if (!author) {
-      this.logger.warn({ id, code: AUTHOR_ERRORS.NOT_FOUND.code }, 'Eliminar fallido — autor no encontrado');
+      this.logger.warn(
+        { id, code: AUTHOR_ERRORS.NOT_FOUND.code },
+        'Eliminar fallido — autor no encontrado',
+      );
       throw new NotFoundException(AUTHOR_ERRORS.NOT_FOUND);
     }
     if (author.deletedAt !== null) {
-      this.logger.warn({ id, code: AUTHOR_ERRORS.ALREADY_DELETED.code }, 'Eliminar fallido — autor ya está eliminado');
+      this.logger.warn(
+        { id, code: AUTHOR_ERRORS.ALREADY_DELETED.code },
+        'Eliminar fallido — autor ya está eliminado',
+      );
       throw new BadRequestException(AUTHOR_ERRORS.ALREADY_DELETED);
     }
     await this.authors.softDelete(id);
@@ -75,11 +88,17 @@ export class AuthorsService {
     this.logger.info({ id }, 'Restaurar autor');
     const author = await this.authors.findByIdRaw(id);
     if (!author) {
-      this.logger.warn({ id, code: AUTHOR_ERRORS.NOT_FOUND.code }, 'Restaurar fallido — autor no encontrado');
+      this.logger.warn(
+        { id, code: AUTHOR_ERRORS.NOT_FOUND.code },
+        'Restaurar fallido — autor no encontrado',
+      );
       throw new NotFoundException(AUTHOR_ERRORS.NOT_FOUND);
     }
     if (author.deletedAt === null) {
-      this.logger.warn({ id, code: AUTHOR_ERRORS.NOT_ACTIVE.code }, 'Restaurar fallido — autor ya está activo');
+      this.logger.warn(
+        { id, code: AUTHOR_ERRORS.NOT_ACTIVE.code },
+        'Restaurar fallido — autor ya está activo',
+      );
       throw new BadRequestException(AUTHOR_ERRORS.NOT_ACTIVE);
     }
     const restored = await this.authors.restore(id);

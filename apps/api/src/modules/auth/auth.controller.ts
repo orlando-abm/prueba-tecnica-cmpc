@@ -1,6 +1,6 @@
 import { Body, Controller, Post } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
+import { InjectPinoLogger, type PinoLogger } from 'nestjs-pino';
 import { AuthService } from './auth.service.js';
 import { LoginSchema, RegisterSchema } from '@repo/shared/schemas/auth.schema';
 import { createZodDto } from 'nestjs-zod';

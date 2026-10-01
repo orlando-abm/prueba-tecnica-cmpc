@@ -1,5 +1,5 @@
-import { Outlet } from 'react-router'
-import { Sidebar } from '@/ui/organisms'
+import { Outlet } from 'react-router';
+import { Sidebar } from '@/ui/organisms';
 
 export default function AppLayout() {
   return (
@@ -9,5 +9,5 @@ export default function AppLayout() {
         <Outlet />
       </main>
     </div>
-  )
+  );
 }

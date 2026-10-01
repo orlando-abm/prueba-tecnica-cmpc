@@ -1,11 +1,11 @@
-import { Pencil, Trash2, RotateCcw } from 'lucide-react'
-import type { Author } from '@repo/shared/types/author.types'
-import { Badge } from '@/ui/atoms'
+import { Pencil, Trash2, RotateCcw } from 'lucide-react';
+import type { Author } from '@repo/shared/types/author.types';
+import { Badge } from '@/ui/atoms';
 
 interface AuthorColumnActions {
-  onEdit:    (author: Author) => void
-  onDelete:  (author: Author) => void
-  onRestore: (author: Author) => void
+  onEdit: (author: Author) => void;
+  onDelete: (author: Author) => void;
+  onRestore: (author: Author) => void;
 }
 
 export function useAuthorColumns({ onEdit, onDelete, onRestore }: AuthorColumnActions) {
@@ -20,9 +20,11 @@ export function useAuthorColumns({ onEdit, onDelete, onRestore }: AuthorColumnAc
       header: 'Estado',
       className: 'w-32',
       render: (a: Author) =>
-        a.deletedAt
-          ? <Badge variant="error">Eliminado</Badge>
-          : <Badge variant="success">Activo</Badge>,
+        a.deletedAt ? (
+          <Badge variant="error">Eliminado</Badge>
+        ) : (
+          <Badge variant="success">Activo</Badge>
+        ),
     },
     {
       key: 'actions',
@@ -32,6 +34,7 @@ export function useAuthorColumns({ onEdit, onDelete, onRestore }: AuthorColumnAc
         <div className="flex items-center justify-end gap-1.5">
           {a.deletedAt ? (
             <button
+              type="button"
               onClick={() => onRestore(a)}
               title="Activar"
               className="p-1.5 rounded-md text-success bg-success-bg hover:bg-success hover:text-white transition-colors cursor-pointer"
@@ -41,6 +44,7 @@ export function useAuthorColumns({ onEdit, onDelete, onRestore }: AuthorColumnAc
           ) : (
             <>
               <button
+                type="button"
                 onClick={() => onEdit(a)}
                 title="Editar"
                 className="p-1.5 rounded-md text-text-secondary bg-black/5 hover:bg-black/10 hover:text-text-primary transition-colors cursor-pointer"
@@ -48,6 +52,7 @@ export function useAuthorColumns({ onEdit, onDelete, onRestore }: AuthorColumnAc
                 <Pencil size={14} />
               </button>
               <button
+                type="button"
                 onClick={() => onDelete(a)}
                 title="Eliminar"
                 className="p-1.5 rounded-md text-error bg-error-bg hover:bg-error hover:text-white transition-colors cursor-pointer"
@@ -59,5 +64,5 @@ export function useAuthorColumns({ onEdit, onDelete, onRestore }: AuthorColumnAc
         </div>
       ),
     },
-  ]
+  ];
 }

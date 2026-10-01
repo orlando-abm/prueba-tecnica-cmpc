@@ -6,5 +6,4 @@ interface RequestContext {
 
 export const requestContext = new AsyncLocalStorage<RequestContext>();
 
-export const getCorrelationId = () =>
-  requestContext.getStore()?.correlationId ?? '-';
+export const getCorrelationId = () => requestContext.getStore()?.correlationId ?? '-';

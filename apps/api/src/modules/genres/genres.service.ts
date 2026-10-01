@@ -1,5 +1,10 @@
-import { Injectable, NotFoundException, ConflictException, BadRequestException } from '@nestjs/common';
-import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+  BadRequestException,
+} from '@nestjs/common';
+import { InjectPinoLogger, type PinoLogger } from 'nestjs-pino';
 import type { Genre } from '@prisma/client';
 import type { PaginatedResponse } from '@repo/shared/types/pagination.types';
 import { GenresRepository } from './genres.repository.js';
@@ -33,7 +38,8 @@ export class GenresService {
     this.logger.info({ name }, 'Crear género');
     const existing = await this.genres.findByName(name);
     if (existing) {
-      const error = existing.deletedAt !== null ? GENRE_ERRORS.DUPLICATE_DELETED : GENRE_ERRORS.DUPLICATE;
+      const error =
+        existing.deletedAt !== null ? GENRE_ERRORS.DUPLICATE_DELETED : GENRE_ERRORS.DUPLICATE;
       this.logger.warn({ name, code: error.code }, 'Crear fallido — género ya existe');
       throw new ConflictException(error);
     }
@@ -47,7 +53,8 @@ export class GenresService {
     await this.findById(id);
     const existing = await this.genres.findByName(name);
     if (existing && existing.id !== id) {
-      const error = existing.deletedAt !== null ? GENRE_ERRORS.DUPLICATE_DELETED : GENRE_ERRORS.DUPLICATE;
+      const error =
+        existing.deletedAt !== null ? GENRE_ERRORS.DUPLICATE_DELETED : GENRE_ERRORS.DUPLICATE;
       this.logger.warn({ id, name, code: error.code }, 'Actualizar fallido — género ya existe');
       throw new ConflictException(error);
     }
@@ -60,11 +67,17 @@ export class GenresService {
     this.logger.info({ id }, 'Eliminar género');
     const genre = await this.genres.findByIdRaw(id);
     if (!genre) {
-      this.logger.warn({ id, code: GENRE_ERRORS.NOT_FOUND.code }, 'Eliminar fallido — género no encontrado');
+      this.logger.warn(
+        { id, code: GENRE_ERRORS.NOT_FOUND.code },
+        'Eliminar fallido — género no encontrado',
+      );
       throw new NotFoundException(GENRE_ERRORS.NOT_FOUND);
     }
     if (genre.deletedAt !== null) {
-      this.logger.warn({ id, code: GENRE_ERRORS.ALREADY_DELETED.code }, 'Eliminar fallido — género ya está eliminado');
+      this.logger.warn(
+        { id, code: GENRE_ERRORS.ALREADY_DELETED.code },
+        'Eliminar fallido — género ya está eliminado',
+      );
       throw new BadRequestException(GENRE_ERRORS.ALREADY_DELETED);
     }
     await this.genres.softDelete(id);
@@ -75,11 +88,17 @@ export class GenresService {
     this.logger.info({ id }, 'Restaurar género');
     const genre = await this.genres.findByIdRaw(id);
     if (!genre) {
-      this.logger.warn({ id, code: GENRE_ERRORS.NOT_FOUND.code }, 'Restaurar fallido — género no encontrado');
+      this.logger.warn(
+        { id, code: GENRE_ERRORS.NOT_FOUND.code },
+        'Restaurar fallido — género no encontrado',
+      );
       throw new NotFoundException(GENRE_ERRORS.NOT_FOUND);
     }
     if (genre.deletedAt === null) {
-      this.logger.warn({ id, code: GENRE_ERRORS.NOT_ACTIVE.code }, 'Restaurar fallido — género ya está activo');
+      this.logger.warn(
+        { id, code: GENRE_ERRORS.NOT_ACTIVE.code },
+        'Restaurar fallido — género ya está activo',
+      );
       throw new BadRequestException(GENRE_ERRORS.NOT_ACTIVE);
     }
     const restored = await this.genres.restore(id);

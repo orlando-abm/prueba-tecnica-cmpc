@@ -1,12 +1,31 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Patch,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import type { Genre } from '@prisma/client';
 import type { PaginatedResponse } from '@repo/shared/types/pagination.types';
-import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
+import { InjectPinoLogger, type PinoLogger } from 'nestjs-pino';
 import { JwtAuthGuard } from '@/modules/auth/guards/jwt.guard.js';
 import { GenresService } from './genres.service.js';
 import { GenreFiltersDto, GenreBodyDto } from './genres.schema.js';
-import { FindAllGenresDoc, FindGenreByIdDoc, CreateGenreDoc, UpdateGenreDoc, DeleteGenreDoc, RestoreGenreDoc } from './docs/genres.docs.js';
+import {
+  FindAllGenresDoc,
+  FindGenreByIdDoc,
+  CreateGenreDoc,
+  UpdateGenreDoc,
+  DeleteGenreDoc,
+  RestoreGenreDoc,
+} from './docs/genres.docs.js';
 
 @ApiTags('Genres')
 @Controller('genres')

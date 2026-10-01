@@ -1,6 +1,6 @@
 import { Injectable, UnauthorizedException, ConflictException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
+import { InjectPinoLogger, type PinoLogger } from 'nestjs-pino';
 import { hash, compare } from 'bcryptjs';
 import { UsersRepository } from '@/modules/users/users.repository.js';
 import type { LoginDto, RegisterDto } from '@repo/shared/schemas/auth.schema';
@@ -20,7 +20,10 @@ export class AuthService {
 
     const existing = await this.users.findByEmail(dto.email);
     if (existing) {
-      this.logger.warn({ email: dto.email, code: AUTH_ERRORS.EMAIL_TAKEN.code }, 'Register failed — email taken');
+      this.logger.warn(
+        { email: dto.email, code: AUTH_ERRORS.EMAIL_TAKEN.code },
+        'Register failed — email taken',
+      );
       throw new ConflictException(AUTH_ERRORS.EMAIL_TAKEN);
     }
 
@@ -36,13 +39,19 @@ export class AuthService {
 
     const user = await this.users.findByEmail(dto.email);
     if (!user) {
-      this.logger.warn({ email: dto.email, code: AUTH_ERRORS.INVALID_CREDENTIALS.code }, 'Login failed — user not found');
+      this.logger.warn(
+        { email: dto.email, code: AUTH_ERRORS.INVALID_CREDENTIALS.code },
+        'Login failed — user not found',
+      );
       throw new UnauthorizedException(AUTH_ERRORS.INVALID_CREDENTIALS);
     }
 
     const valid = await compare(dto.password, user.password);
     if (!valid) {
-      this.logger.warn({ email: dto.email, code: AUTH_ERRORS.INVALID_CREDENTIALS.code }, 'Login failed — invalid password');
+      this.logger.warn(
+        { email: dto.email, code: AUTH_ERRORS.INVALID_CREDENTIALS.code },
+        'Login failed — invalid password',
+      );
       throw new UnauthorizedException(AUTH_ERRORS.INVALID_CREDENTIALS);
     }
 

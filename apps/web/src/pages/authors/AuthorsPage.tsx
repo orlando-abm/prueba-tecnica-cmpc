@@ -1,106 +1,115 @@
-import { useState } from 'react'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { Search, Plus, X } from 'lucide-react'
-import { AuthorBodySchema, type AuthorBodyDto } from '@repo/shared/schemas/author.schema'
-import type { Author } from '@repo/shared/types/author.types'
-import { useAuthors, useCreateAuthor, useUpdateAuthor, useDeleteAuthor, useRestoreAuthor } from '@/hooks/useAuthors'
-import { useDebounce } from '@/hooks/useDebounce'
-import { useAuthorColumns } from './useAuthorColumns'
-import { Button, Input, Modal, Select, ConfirmModal } from '@/ui/atoms'
-import { Table, Pagination } from '@/ui/organisms'
-import { ApiError } from '@/lib/http'
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Search, Plus, X } from 'lucide-react';
+import { AuthorBodySchema, type AuthorBodyDto } from '@repo/shared/schemas/author.schema';
+import type { Author } from '@repo/shared/types/author.types';
+import {
+  useAuthors,
+  useCreateAuthor,
+  useUpdateAuthor,
+  useDeleteAuthor,
+  useRestoreAuthor,
+} from '@/hooks/useAuthors';
+import { useDebounce } from '@/hooks/useDebounce';
+import { useAuthorColumns } from './useAuthorColumns';
+import { Button, Input, Modal, Select, ConfirmModal } from '@/ui/atoms';
+import { Table, Pagination } from '@/ui/organisms';
+import { ApiError } from '@/lib/http';
 
-type ModalState =
-  | { mode: 'closed' }
-  | { mode: 'create' }
-  | { mode: 'edit'; author: Author }
+type ModalState = { mode: 'closed' } | { mode: 'create' } | { mode: 'edit'; author: Author };
 
 type ConfirmState =
   | { mode: 'closed' }
-  | { mode: 'delete';  author: Author }
-  | { mode: 'restore'; author: Author }
+  | { mode: 'delete'; author: Author }
+  | { mode: 'restore'; author: Author };
 
-type StatusFilter = 'active' | 'inactive' | 'all'
+type StatusFilter = 'active' | 'inactive' | 'all';
 
 const STATUS_OPTIONS: { value: StatusFilter; label: string }[] = [
-  { value: 'active',   label: 'Activos' },
+  { value: 'active', label: 'Activos' },
   { value: 'inactive', label: 'Eliminados' },
-  { value: 'all',      label: 'Todos' },
-]
+  { value: 'all', label: 'Todos' },
+];
 
 export default function AuthorsPage() {
-  const [search, setSearch] = useState('')
-  const [page, setPage]     = useState(1)
-  const [limit, setLimit]   = useState(20)
-  const [status, setStatus] = useState<StatusFilter>('active')
-  const [modal, setModal]     = useState<ModalState>({ mode: 'closed' })
-  const [confirm, setConfirm] = useState<ConfirmState>({ mode: 'closed' })
+  const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(20);
+  const [status, setStatus] = useState<StatusFilter>('active');
+  const [modal, setModal] = useState<ModalState>({ mode: 'closed' });
+  const [confirm, setConfirm] = useState<ConfirmState>({ mode: 'closed' });
 
-  const debouncedSearch = useDebounce(search, 400)
-  const activeSearch    = debouncedSearch.length >= 3 ? debouncedSearch : undefined
+  const debouncedSearch = useDebounce(search, 400);
+  const activeSearch = debouncedSearch.length >= 3 ? debouncedSearch : undefined;
 
-  const { data, isLoading } = useAuthors({ search: activeSearch, page, limit, status })
-  const createAuthor = useCreateAuthor()
-  const updateAuthor = useUpdateAuthor()
-  const deleteAuthor   = useDeleteAuthor()
-  const restoreAuthor  = useRestoreAuthor()
+  const { data, isLoading } = useAuthors({ search: activeSearch, page, limit, status });
+  const createAuthor = useCreateAuthor();
+  const updateAuthor = useUpdateAuthor();
+  const deleteAuthor = useDeleteAuthor();
+  const restoreAuthor = useRestoreAuthor();
 
-  const { register, handleSubmit, formState: { errors, isSubmitting }, reset, setError } = useForm<AuthorBodyDto>({
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    reset,
+    setError,
+  } = useForm<AuthorBodyDto>({
     resolver: zodResolver(AuthorBodySchema),
-  })
+  });
 
   function openCreate() {
-    reset({ name: '' })
-    setModal({ mode: 'create' })
+    reset({ name: '' });
+    setModal({ mode: 'create' });
   }
 
   function openEdit(author: Author) {
-    reset({ name: author.name })
-    setModal({ mode: 'edit', author })
+    reset({ name: author.name });
+    setModal({ mode: 'edit', author });
   }
 
   function closeModal() {
-    setModal({ mode: 'closed' })
-    reset()
+    setModal({ mode: 'closed' });
+    reset();
   }
 
   async function onSubmit(dto: AuthorBodyDto) {
     try {
-      if (modal.mode === 'create') await createAuthor.mutateAsync(dto)
-      else if (modal.mode === 'edit') await updateAuthor.mutateAsync({ id: modal.author.id, dto })
-      closeModal()
+      if (modal.mode === 'create') await createAuthor.mutateAsync(dto);
+      else if (modal.mode === 'edit') await updateAuthor.mutateAsync({ id: modal.author.id, dto });
+      closeModal();
     } catch (err) {
-      if (err instanceof ApiError) setError('name', { message: err.error.message })
+      if (err instanceof ApiError) setError('name', { message: err.error.message });
     }
   }
 
   async function handleConfirm() {
     try {
       if (confirm.mode === 'delete') {
-        await deleteAuthor.mutateAsync(confirm.author.id)
+        await deleteAuthor.mutateAsync(confirm.author.id);
       } else if (confirm.mode === 'restore') {
-        await restoreAuthor.mutateAsync(confirm.author.id)
+        await restoreAuthor.mutateAsync(confirm.author.id);
       }
     } finally {
-      setConfirm({ mode: 'closed' })
+      setConfirm({ mode: 'closed' });
     }
   }
 
   function clearFilters() {
-    setStatus('active')
-    setSearch('')
-    setPage(1)
-    setLimit(20)
+    setStatus('active');
+    setSearch('');
+    setPage(1);
+    setLimit(20);
   }
 
-  const hasFilters = status !== 'active' || debouncedSearch.length >= 3
+  const hasFilters = status !== 'active' || debouncedSearch.length >= 3;
 
   const columns = useAuthorColumns({
-    onEdit:    openEdit,
-    onDelete:  a => setConfirm({ mode: 'delete',  author: a }),
-    onRestore: a => setConfirm({ mode: 'restore', author: a }),
-  })
+    onEdit: openEdit,
+    onDelete: (a) => setConfirm({ mode: 'delete', author: a }),
+    onRestore: (a) => setConfirm({ mode: 'restore', author: a }),
+  });
 
   return (
     <div className="p-10 flex flex-col gap-6">
@@ -126,12 +135,24 @@ export default function AuthorsPage() {
             <Input
               placeholder="Buscar autor..."
               value={search}
-              onChange={e => { setSearch(e.target.value); setPage(1) }}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
               startIcon={<Search size={15} />}
               endIcon={
-                search.length > 0
-                  ? <button type="button" onClick={() => { setSearch(''); setPage(1) }} className="cursor-pointer hover:text-text-primary transition-colors"><X size={14} /></button>
-                  : undefined
+                search.length > 0 ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSearch('');
+                      setPage(1);
+                    }}
+                    className="cursor-pointer hover:text-text-primary transition-colors"
+                  >
+                    <X size={14} />
+                  </button>
+                ) : undefined
               }
               className="rounded-full"
             />
@@ -142,7 +163,10 @@ export default function AuthorsPage() {
             <Select
               value={status}
               options={STATUS_OPTIONS}
-              onChange={val => { setStatus(val as StatusFilter); setPage(1) }}
+              onChange={(val) => {
+                setStatus(val as StatusFilter);
+                setPage(1);
+              }}
             />
           </div>
         </div>
@@ -152,8 +176,15 @@ export default function AuthorsPage() {
           <div className="flex items-center gap-2 flex-wrap">
             {status !== 'active' && (
               <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-purple-bg border border-purple-text/20 text-xs font-semibold font-sans text-purple-text">
-                {STATUS_OPTIONS.find(o => o.value === status)?.label}
-                <button onClick={() => { setStatus('active'); setPage(1) }} className="cursor-pointer hover:opacity-70">
+                {STATUS_OPTIONS.find((o) => o.value === status)?.label}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setStatus('active');
+                    setPage(1);
+                  }}
+                  className="cursor-pointer hover:opacity-70"
+                >
                   <X size={11} />
                 </button>
               </span>
@@ -161,12 +192,20 @@ export default function AuthorsPage() {
             {debouncedSearch.length >= 3 && (
               <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-info-bg border border-info/20 text-xs font-semibold font-sans text-info-text">
                 "{debouncedSearch}"
-                <button onClick={() => { setSearch(''); setPage(1) }} className="cursor-pointer hover:opacity-70">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSearch('');
+                    setPage(1);
+                  }}
+                  className="cursor-pointer hover:opacity-70"
+                >
                   <X size={11} />
                 </button>
               </span>
             )}
             <button
+              type="button"
               onClick={clearFilters}
               className="text-xs font-sans text-text-secondary hover:text-text-primary underline cursor-pointer transition-colors"
             >
@@ -174,32 +213,34 @@ export default function AuthorsPage() {
             </button>
           </div>
         )}
-      {/* Table */}
-      <div className="bg-surface-light rounded-xl border border-border-light overflow-hidden">
-        {isLoading ? (
-          <div className="py-16 text-center text-text-secondary font-sans text-sm">Cargando...</div>
-        ) : (
-          <Table
-            columns={columns}
-            data={data?.items ?? []}
-            keyField="id"
-            emptyMessage="No se encontraron autores."
+        {/* Table */}
+        <div className="bg-surface-light rounded-xl border border-border-light overflow-hidden">
+          {isLoading ? (
+            <div className="py-16 text-center text-text-secondary font-sans text-sm">
+              Cargando...
+            </div>
+          ) : (
+            <Table
+              columns={columns}
+              data={data?.items ?? []}
+              keyField="id"
+              emptyMessage="No se encontraron autores."
+            />
+          )}
+        </div>
+
+        {/* Pagination */}
+        {data && (
+          <Pagination
+            page={page}
+            totalPages={data.totalPages}
+            total={data.total}
+            limit={limit}
+            onPageChange={setPage}
+            onLimitChange={setLimit}
+            itemLabel="autores"
           />
         )}
-      </div>
-
-      {/* Pagination */}
-      {data && (
-        <Pagination
-          page={page}
-          totalPages={data.totalPages}
-          total={data.total}
-          limit={limit}
-          onPageChange={setPage}
-          onLimitChange={setLimit}
-          itemLabel="autores"
-        />
-      )}
       </div>
 
       {/* Confirm delete / restore */}
@@ -210,8 +251,8 @@ export default function AuthorsPage() {
           confirm.mode === 'delete'
             ? `¿Estás seguro que quieres eliminar "${confirm.author.name}"? Esta acción se puede revertir.`
             : confirm.mode === 'restore'
-            ? `¿Quieres activar "${confirm.author.name}"?`
-            : ''
+              ? `¿Quieres activar "${confirm.author.name}"?`
+              : ''
         }
         confirmLabel={confirm.mode === 'delete' ? 'Sí, eliminar' : 'Sí, activar'}
         variant={confirm.mode === 'delete' ? 'destructive' : 'success'}
@@ -234,7 +275,9 @@ export default function AuthorsPage() {
             {...register('name')}
           />
           <div className="flex gap-3 justify-end">
-            <Button type="button" variant="secondary" onClick={closeModal}>Cancelar</Button>
+            <Button type="button" variant="secondary" onClick={closeModal}>
+              Cancelar
+            </Button>
             <Button type="submit" disabled={isSubmitting}>
               {modal.mode === 'create' ? 'Crear' : 'Guardar'}
             </Button>
@@ -242,5 +285,5 @@ export default function AuthorsPage() {
         </form>
       </Modal>
     </div>
-  )
+  );
 }

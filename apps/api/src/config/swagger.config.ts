@@ -1,4 +1,4 @@
-import { Logger, INestApplication } from '@nestjs/common';
+import { Logger, type INestApplication } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 const logger = new Logger('SwaggerConfig');

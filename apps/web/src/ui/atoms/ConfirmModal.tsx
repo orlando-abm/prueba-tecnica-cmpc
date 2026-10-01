@@ -1,16 +1,16 @@
-import { Modal } from './Modal'
-import { Button } from './Button'
+import { Modal } from './Modal';
+import { Button } from './Button';
 
 interface ConfirmModalProps {
-  open: boolean
-  title: string
-  description: string
-  confirmLabel?: string
-  cancelLabel?: string
-  variant?: 'destructive' | 'success'
-  loading?: boolean
-  onConfirm: () => void
-  onCancel: () => void
+  open: boolean;
+  title: string;
+  description: string;
+  confirmLabel?: string;
+  cancelLabel?: string;
+  variant?: 'destructive' | 'success';
+  loading?: boolean;
+  onConfirm: () => void;
+  onCancel: () => void;
 }
 
 export function ConfirmModal({
@@ -41,5 +41,5 @@ export function ConfirmModal({
         </Button>
       </div>
     </Modal>
-  )
+  );
 }

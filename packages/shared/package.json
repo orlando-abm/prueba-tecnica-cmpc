@@ -4,7 +4,11 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "tsc"
+    "build": "tsc",
+    "format": "biome format --write src/",
+    "lint": "biome check src/",
+    "lint:fix": "biome check --write src/",
+    "check": "biome check --write src/"
   },
   "exports": {
     "./schemas/*": "./dist/schemas/*.js",

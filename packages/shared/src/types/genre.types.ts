@@ -1,7 +1,7 @@
 export interface Genre {
-  id: string
-  name: string
-  createdAt: string
-  updatedAt: string
-  deletedAt: string | null
+  id: string;
+  name: string;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
 }
