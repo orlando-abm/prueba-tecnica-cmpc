@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { InjectPinoLogger, type PinoLogger } from 'nestjs-pino';
 import type { Author } from '@prisma/client';
+import { generateUniqueSlug } from '@common/utils/slugify.js';
 import type { PaginatedResponse } from '@repo/shared/types/pagination.types';
 import { AuthorsRepository } from './authors.repository.js';
 import { AUTHOR_ERRORS } from './authors.errors.js';
@@ -43,14 +44,18 @@ export class AuthorsService {
       this.logger.warn({ name, code: error.code }, 'Crear fallido — autor ya existe');
       throw new ConflictException(error);
     }
-    const author = await this.authors.create(name);
+    const slug = await generateUniqueSlug(name, async (s) => {
+      const bySlug = await this.authors.findBySlugRaw(s);
+      return bySlug !== null;
+    });
+    const author = await this.authors.create(name, slug);
     this.logger.info({ authorId: author.id }, 'Autor creado');
     return author;
   }
 
   async update(id: string, name: string): Promise<Author> {
     this.logger.info({ id, name }, 'Actualizar autor');
-    await this.findById(id);
+    const current = await this.findById(id);
     const existing = await this.authors.findByName(name);
     if (existing && existing.id !== id) {
       const error =
@@ -58,7 +63,14 @@ export class AuthorsService {
       this.logger.warn({ id, name, code: error.code }, 'Actualizar fallido — autor ya existe');
       throw new ConflictException(error);
     }
-    const author = await this.authors.update(id, name);
+    let slug: string | undefined;
+    if (name !== current.name) {
+      slug = await generateUniqueSlug(name, async (s) => {
+        const bySlug = await this.authors.findBySlugRaw(s);
+        return bySlug !== null && bySlug.id !== id;
+      });
+    }
+    const author = await this.authors.update(id, name, slug);
     this.logger.info({ authorId: author.id }, 'Autor actualizado');
     return author;
   }

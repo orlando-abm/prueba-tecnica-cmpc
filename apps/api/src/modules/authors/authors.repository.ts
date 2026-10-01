@@ -38,6 +38,10 @@ export class AuthorsRepository {
     return this.prisma.author.findFirst({ where: { id } });
   }
 
+  findBySlugRaw(slug: string): Promise<Author | null> {
+    return this.prisma.author.findFirst({ where: { slug } });
+  }
+
   findByIdDeleted(id: string): Promise<Author | null> {
     return this.prisma.author.findFirst({ where: { id, deletedAt: { not: null } } });
   }
@@ -48,12 +52,12 @@ export class AuthorsRepository {
     });
   }
 
-  create(name: string): Promise<Author> {
-    return this.prisma.author.create({ data: { name } });
+  create(name: string, slug: string): Promise<Author> {
+    return this.prisma.author.create({ data: { name, slug } });
   }
 
-  update(id: string, name: string): Promise<Author> {
-    return this.prisma.author.update({ where: { id }, data: { name } });
+  update(id: string, name: string, slug?: string): Promise<Author> {
+    return this.prisma.author.update({ where: { id }, data: { name, ...(slug ? { slug } : {}) } });
   }
 
   softDelete(id: string): Promise<Author> {

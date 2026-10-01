@@ -38,6 +38,10 @@ export class PublishersRepository {
     return this.prisma.publisher.findFirst({ where: { id } });
   }
 
+  findBySlugRaw(slug: string): Promise<Publisher | null> {
+    return this.prisma.publisher.findFirst({ where: { slug } });
+  }
+
   findByIdDeleted(id: string): Promise<Publisher | null> {
     return this.prisma.publisher.findFirst({ where: { id, deletedAt: { not: null } } });
   }
@@ -48,12 +52,15 @@ export class PublishersRepository {
     });
   }
 
-  create(name: string): Promise<Publisher> {
-    return this.prisma.publisher.create({ data: { name } });
+  create(name: string, slug: string): Promise<Publisher> {
+    return this.prisma.publisher.create({ data: { name, slug } });
   }
 
-  update(id: string, name: string): Promise<Publisher> {
-    return this.prisma.publisher.update({ where: { id }, data: { name } });
+  update(id: string, name: string, slug?: string): Promise<Publisher> {
+    return this.prisma.publisher.update({
+      where: { id },
+      data: { name, ...(slug ? { slug } : {}) },
+    });
   }
 
   softDelete(id: string): Promise<Publisher> {

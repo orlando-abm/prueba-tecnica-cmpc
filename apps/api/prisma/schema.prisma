@@ -6,7 +6,7 @@ generator client {
 datasource db {
   provider   = "postgresql"
   url        = env("DATABASE_URL")
-  extensions = [citext]
+  extensions = [citext, unaccent]
 }
 
 // ─── Enums ───────────────────────────────────────────────────────────────────
@@ -59,6 +59,7 @@ model UserProfile {
 model Genre {
   id        String    @id @default(uuid())
   name      String    @unique @db.Citext
+  slug      String    @unique
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime  @updatedAt @map("updated_at")
   deletedAt DateTime? @map("deleted_at")
@@ -72,6 +73,7 @@ model Genre {
 model Author {
   id        String    @id @default(uuid())
   name      String    @unique @db.Citext
+  slug      String    @unique
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime  @updatedAt @map("updated_at")
   deletedAt DateTime? @map("deleted_at")
@@ -85,6 +87,7 @@ model Author {
 model Publisher {
   id        String    @id @default(uuid())
   name      String    @unique @db.Citext
+  slug      String    @unique
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime  @updatedAt @map("updated_at")
   deletedAt DateTime? @map("deleted_at")
@@ -100,6 +103,7 @@ model Publisher {
 model Book {
   id          String    @id @default(uuid())
   title       String    @db.Citext
+  slug        String    @unique
   isbn        String?   @unique
   sku         String?   @unique
   synopsis    String?   @db.Text

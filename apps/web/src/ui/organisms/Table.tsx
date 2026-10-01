@@ -1,8 +1,11 @@
+import { ChevronUp, ChevronDown, ChevronsUpDown } from 'lucide-react';
+
 interface Column<T> {
   key: keyof T | string;
   header: string;
   className?: string;
   render?: (row: T) => React.ReactNode;
+  sortKey?: string;
 }
 
 interface TableProps<T> {
@@ -10,6 +13,9 @@ interface TableProps<T> {
   data: T[];
   keyField: keyof T;
   emptyMessage?: string;
+  sortBy?: string;
+  order?: 'asc' | 'desc';
+  onSort?: (key: string) => void;
 }
 
 export function Table<T>({
@@ -17,20 +23,42 @@ export function Table<T>({
   data,
   keyField,
   emptyMessage = 'Sin resultados.',
+  sortBy,
+  order,
+  onSort,
 }: TableProps<T>) {
   return (
     <div className="w-full overflow-x-auto">
       <table className="w-full text-sm font-sans border-collapse">
         <thead>
           <tr className="border-b border-border-light">
-            {columns.map((col) => (
-              <th
-                key={String(col.key)}
-                className={`py-3 px-4 text-left text-[11px] font-semibold uppercase tracking-wide text-text-secondary ${col.className ?? ''}`}
-              >
-                {col.header}
-              </th>
-            ))}
+            {columns.map((col) => {
+              const isSortable = !!col.sortKey && !!onSort;
+              const isActive = col.sortKey && col.sortKey === sortBy;
+
+              return (
+                <th
+                  key={String(col.key)}
+                  className={`py-3 px-4 text-left text-[11px] font-semibold uppercase tracking-wide text-text-secondary ${col.className ?? ''} ${isSortable ? 'cursor-pointer select-none hover:text-text-primary transition-colors' : ''}`}
+                  onClick={isSortable ? () => onSort!(col.sortKey!) : undefined}
+                >
+                  <span className="inline-flex items-center gap-1">
+                    {col.header}
+                    {isSortable && (
+                      <span className={isActive ? 'text-accent' : 'text-border-light'}>
+                        {isActive && order === 'asc' ? (
+                          <ChevronUp size={13} />
+                        ) : isActive && order === 'desc' ? (
+                          <ChevronDown size={13} />
+                        ) : (
+                          <ChevronsUpDown size={13} />
+                        )}
+                      </span>
+                    )}
+                  </span>
+                </th>
+              );
+            })}
           </tr>
         </thead>
         <tbody>

@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { InjectPinoLogger, type PinoLogger } from 'nestjs-pino';
 import type { Publisher } from '@prisma/client';
+import { generateUniqueSlug } from '@common/utils/slugify.js';
 import type { PaginatedResponse } from '@repo/shared/types/pagination.types';
 import { PublishersRepository } from './publishers.repository.js';
 import { PUBLISHER_ERRORS } from './publishers.errors.js';
@@ -45,14 +46,18 @@ export class PublishersService {
       this.logger.warn({ name, code: error.code }, 'Crear fallido — editorial ya existe');
       throw new ConflictException(error);
     }
-    const publisher = await this.publishers.create(name);
+    const slug = await generateUniqueSlug(name, async (s) => {
+      const bySlug = await this.publishers.findBySlugRaw(s);
+      return bySlug !== null;
+    });
+    const publisher = await this.publishers.create(name, slug);
     this.logger.info({ publisherId: publisher.id }, 'Editorial creada');
     return publisher;
   }
 
   async update(id: string, name: string): Promise<Publisher> {
     this.logger.info({ id, name }, 'Actualizar editorial');
-    await this.findById(id);
+    const current = await this.findById(id);
     const existing = await this.publishers.findByName(name);
     if (existing && existing.id !== id) {
       const error =
@@ -62,7 +67,14 @@ export class PublishersService {
       this.logger.warn({ id, name, code: error.code }, 'Actualizar fallido — editorial ya existe');
       throw new ConflictException(error);
     }
-    const publisher = await this.publishers.update(id, name);
+    let slug: string | undefined;
+    if (name !== current.name) {
+      slug = await generateUniqueSlug(name, async (s) => {
+        const bySlug = await this.publishers.findBySlugRaw(s);
+        return bySlug !== null && bySlug.id !== id;
+      });
+    }
+    const publisher = await this.publishers.update(id, name, slug);
     this.logger.info({ publisherId: publisher.id }, 'Editorial actualizada');
     return publisher;
   }

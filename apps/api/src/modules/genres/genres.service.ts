@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { InjectPinoLogger, type PinoLogger } from 'nestjs-pino';
 import type { Genre } from '@prisma/client';
+import { generateUniqueSlug } from '@common/utils/slugify.js';
 import type { PaginatedResponse } from '@repo/shared/types/pagination.types';
 import { GenresRepository } from './genres.repository.js';
 import { GENRE_ERRORS } from './genres.errors.js';
@@ -43,22 +44,33 @@ export class GenresService {
       this.logger.warn({ name, code: error.code }, 'Crear fallido — género ya existe');
       throw new ConflictException(error);
     }
-    const genre = await this.genres.create(name);
+    const slug = await generateUniqueSlug(name, async (s) => {
+      const bySlug = await this.genres.findBySlugRaw(s);
+      return bySlug !== null;
+    });
+    const genre = await this.genres.create(name, slug);
     this.logger.info({ genreId: genre.id }, 'Género creado');
     return genre;
   }
 
   async update(id: string, name: string): Promise<Genre> {
     this.logger.info({ id, name }, 'Actualizar género');
-    await this.findById(id);
-    const existing = await this.genres.findByName(name);
-    if (existing && existing.id !== id) {
+    const existing = await this.findById(id);
+    const byName = await this.genres.findByName(name);
+    if (byName && byName.id !== id) {
       const error =
-        existing.deletedAt !== null ? GENRE_ERRORS.DUPLICATE_DELETED : GENRE_ERRORS.DUPLICATE;
+        byName.deletedAt !== null ? GENRE_ERRORS.DUPLICATE_DELETED : GENRE_ERRORS.DUPLICATE;
       this.logger.warn({ id, name, code: error.code }, 'Actualizar fallido — género ya existe');
       throw new ConflictException(error);
     }
-    const genre = await this.genres.update(id, name);
+    let slug: string | undefined;
+    if (name !== existing.name) {
+      slug = await generateUniqueSlug(name, async (s) => {
+        const bySlug = await this.genres.findBySlugRaw(s);
+        return bySlug !== null && bySlug.id !== id;
+      });
+    }
+    const genre = await this.genres.update(id, name, slug);
     this.logger.info({ genreId: genre.id }, 'Género actualizado');
     return genre;
   }

@@ -4,6 +4,7 @@ import AppLayout from './ui/layouts/AppLayout';
 import GenresPage from './pages/genres/GenresPage';
 import AuthorsPage from './pages/authors/AuthorsPage';
 import PublishersPage from './pages/publishers/PublishersPage';
+import BooksPage from './pages/books/BooksPage';
 
 export default function App() {
   return (
@@ -15,6 +16,7 @@ export default function App() {
           <Route path="/genres" element={<GenresPage />} />
           <Route path="/authors" element={<AuthorsPage />} />
           <Route path="/publishers" element={<PublishersPage />} />
+          <Route path="/books" element={<BooksPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

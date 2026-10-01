@@ -1,16 +1,9 @@
 import { http } from '@/lib/http';
+import { toQuery } from '@/lib/query';
 import { ENDPOINTS } from '@repo/shared/constants/endpoints';
 import type { Author } from '@repo/shared/types/author.types';
 import type { AuthorBodyDto, AuthorFilters } from '@repo/shared/schemas/author.schema';
 import type { PaginatedResponse } from '@repo/shared/types/pagination.types';
-
-function toQuery(filters: Partial<AuthorFilters>): string {
-  const params = new URLSearchParams();
-  Object.entries(filters).forEach(([k, v]) => {
-    if (v !== undefined && v !== '') params.set(k, String(v));
-  });
-  return params.size ? `?${params.toString()}` : '';
-}
 
 export const authorsService = {
   findAll: (filters: Partial<AuthorFilters> = {}) =>

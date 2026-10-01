@@ -39,6 +39,35 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return body.data;
 }
 
+async function requestBlob(path: string): Promise<Blob> {
+  const token = getToken();
+  const res = await fetch(`${BASE_URL}${path}`, {
+    method: 'GET',
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.blob();
+}
+
+async function requestUpload<T>(path: string, formData: FormData): Promise<T> {
+  const token = getToken();
+  const res = await fetch(`${BASE_URL}${path}`, {
+    method: 'POST',
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    body: formData,
+  });
+
+  const body: ApiResponse<T> = await res.json();
+
+  if (!res.ok || !body.success)
+    throw new ApiError(
+      res.status,
+      (body as { success: false; error: { code: string; message: string } }).error,
+    );
+
+  return body.data;
+}
+
 export const http = {
   get: <T>(path: string) => request<T>(path, { method: 'GET' }),
   post: <T>(path: string, data: unknown) =>
@@ -46,4 +75,6 @@ export const http = {
   patch: <T>(path: string, data: unknown) =>
     request<T>(path, { method: 'PATCH', body: JSON.stringify(data) }),
   delete: <T = void>(path: string) => request<T>(path, { method: 'DELETE' }),
+  blob: (path: string) => requestBlob(path),
+  upload: <T>(path: string, formData: FormData) => requestUpload<T>(path, formData),
 };

@@ -38,6 +38,10 @@ export class GenresRepository {
     return this.prisma.genre.findFirst({ where: { id } });
   }
 
+  findBySlugRaw(slug: string): Promise<Genre | null> {
+    return this.prisma.genre.findFirst({ where: { slug } });
+  }
+
   findByIdDeleted(id: string): Promise<Genre | null> {
     return this.prisma.genre.findFirst({ where: { id, deletedAt: { not: null } } });
   }
@@ -48,12 +52,12 @@ export class GenresRepository {
     });
   }
 
-  create(name: string): Promise<Genre> {
-    return this.prisma.genre.create({ data: { name } });
+  create(name: string, slug: string): Promise<Genre> {
+    return this.prisma.genre.create({ data: { name, slug } });
   }
 
-  update(id: string, name: string): Promise<Genre> {
-    return this.prisma.genre.update({ where: { id }, data: { name } });
+  update(id: string, name: string, slug?: string): Promise<Genre> {
+    return this.prisma.genre.update({ where: { id }, data: { name, ...(slug ? { slug } : {}) } });
   }
 
   softDelete(id: string): Promise<Genre> {

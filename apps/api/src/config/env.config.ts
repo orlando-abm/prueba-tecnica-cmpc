@@ -15,7 +15,11 @@ export const envSchema = z.object({
   MINIO_ACCESS_KEY: z.string().default('cmpc'),
   MINIO_SECRET_KEY: z.string().default('cmpc1234'),
   MINIO_BUCKET: z.string().default('cmpc-libros'),
-  MINIO_USE_SSL: z.coerce.boolean().default(false),
+  MINIO_USE_SSL: z
+    .enum(['true', 'false'])
+    .transform((v) => v === 'true')
+    .default('false'),
+  MINIO_PUBLIC_URL: z.string().default('http://localhost:9000'),
 });
 
 export type Env = z.infer<typeof envSchema>;

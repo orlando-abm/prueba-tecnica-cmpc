@@ -27,4 +27,17 @@ export const ENDPOINTS = {
     remove: (id: string) => `/publishers/${id}`,
     restore: (id: string) => `/publishers/${id}/restore`,
   },
+  books: {
+    findAll: '/books',
+    findById: (id: string) => `/books/${id}`,
+    findBySlug: (slug: string) => `/books/slug/${slug}`,
+    create: '/books',
+    update: (id: string) => `/books/${id}`,
+    remove: (id: string) => `/books/${id}`,
+    restore: (id: string) => `/books/${id}/restore`,
+    exportCsv: '/books/export/csv',
+  },
+  storage: {
+    uploadImage: '/storage/image',
+  },
 } as const;
