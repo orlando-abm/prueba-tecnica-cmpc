@@ -100,8 +100,13 @@ export const RestoreGenreDoc = () =>
     }),
     ApiResponse({
       status: HttpStatus.NOT_FOUND,
-      description: GENRE_ERRORS.NOT_DELETED.message,
-      schema: { example: { success: false, error: GENRE_ERRORS.NOT_DELETED } },
+      description: GENRE_ERRORS.NOT_FOUND.message,
+      schema: { example: { success: false, error: GENRE_ERRORS.NOT_FOUND } },
+    }),
+    ApiResponse({
+      status: HttpStatus.BAD_REQUEST,
+      description: GENRE_ERRORS.NOT_ACTIVE.message,
+      schema: { example: { success: false, error: GENRE_ERRORS.NOT_ACTIVE } },
     }),
   );
 
@@ -114,5 +119,10 @@ export const DeleteGenreDoc = () =>
       status: HttpStatus.NOT_FOUND,
       description: GENRE_ERRORS.NOT_FOUND.message,
       schema: { example: notFound },
+    }),
+    ApiResponse({
+      status: HttpStatus.BAD_REQUEST,
+      description: GENRE_ERRORS.ALREADY_DELETED.message,
+      schema: { example: { success: false, error: GENRE_ERRORS.ALREADY_DELETED } },
     }),
   );

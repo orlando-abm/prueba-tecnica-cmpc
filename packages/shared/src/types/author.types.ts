@@ -1,4 +1,4 @@
-export interface Genre {
+export interface Author {
   id: string
   name: string
   createdAt: string

@@ -11,4 +11,12 @@ export const ENDPOINTS = {
     remove:   (id: string) => `/genres/${id}`,
     restore:  (id: string) => `/genres/${id}/restore`,
   },
+  authors: {
+    findAll:  '/authors',
+    findById: (id: string) => `/authors/${id}`,
+    create:   '/authors',
+    update:   (id: string) => `/authors/${id}`,
+    remove:   (id: string) => `/authors/${id}`,
+    restore:  (id: string) => `/authors/${id}/restore`,
+  },
 } as const

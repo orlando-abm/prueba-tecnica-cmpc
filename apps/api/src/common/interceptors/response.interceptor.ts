@@ -1,11 +1,15 @@
 import { CallHandler, ExecutionContext, NestInterceptor } from '@nestjs/common';
 import { Observable, map } from 'rxjs';
-import type { SuccessResponse } from '@repo/shared/types/response.types';
+import type { Response } from 'express';
 
 export class ResponseInterceptor implements NestInterceptor {
-  intercept(_ctx: ExecutionContext, next: CallHandler): Observable<SuccessResponse> {
+  intercept(ctx: ExecutionContext, next: CallHandler): Observable<unknown> {
+    const res = ctx.switchToHttp().getResponse<Response>();
     return next.handle().pipe(
-      map((data): SuccessResponse => ({ success: true, data })),
+      map((data): unknown => {
+        if (res.statusCode === 204) return data;
+        return { success: true, data };
+      }),
     );
   }
 }

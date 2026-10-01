@@ -2,6 +2,7 @@ import { BrowserRouter, Route, Routes, Navigate } from 'react-router'
 import LoginPage from './pages/login/LoginPage'
 import AppLayout from './ui/layouts/AppLayout'
 import GenresPage from './pages/genres/GenresPage'
+import AuthorsPage from './pages/authors/AuthorsPage'
 
 export default function App() {
   return (
@@ -11,6 +12,7 @@ export default function App() {
         <Route element={<AppLayout />}>
           <Route index element={<Navigate to="/genres" replace />} />
           <Route path="/genres" element={<GenresPage />} />
+          <Route path="/authors" element={<AuthorsPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

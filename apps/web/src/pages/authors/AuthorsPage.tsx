@@ -2,11 +2,11 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Search, Plus, X } from 'lucide-react'
-import { GenreBodySchema, type GenreBodyDto } from '@repo/shared/schemas/genre.schema'
-import type { Genre } from '@repo/shared/types/genre.types'
-import { useGenres, useCreateGenre, useUpdateGenre, useDeleteGenre, useRestoreGenre } from '@/hooks/useGenres'
+import { AuthorBodySchema, type AuthorBodyDto } from '@repo/shared/schemas/author.schema'
+import type { Author } from '@repo/shared/types/author.types'
+import { useAuthors, useCreateAuthor, useUpdateAuthor, useDeleteAuthor, useRestoreAuthor } from '@/hooks/useAuthors'
 import { useDebounce } from '@/hooks/useDebounce'
-import { useGenreColumns } from './useGenreColumns'
+import { useAuthorColumns } from './useAuthorColumns'
 import { Button, Input, Modal, Select, ConfirmModal } from '@/ui/atoms'
 import { Table, Pagination } from '@/ui/organisms'
 import { ApiError } from '@/lib/http'
@@ -14,12 +14,12 @@ import { ApiError } from '@/lib/http'
 type ModalState =
   | { mode: 'closed' }
   | { mode: 'create' }
-  | { mode: 'edit'; genre: Genre }
+  | { mode: 'edit'; author: Author }
 
 type ConfirmState =
   | { mode: 'closed' }
-  | { mode: 'delete';  genre: Genre }
-  | { mode: 'restore'; genre: Genre }
+  | { mode: 'delete';  author: Author }
+  | { mode: 'restore'; author: Author }
 
 type StatusFilter = 'active' | 'inactive' | 'all'
 
@@ -29,7 +29,7 @@ const STATUS_OPTIONS: { value: StatusFilter; label: string }[] = [
   { value: 'all',      label: 'Todos' },
 ]
 
-export default function GenresPage() {
+export default function AuthorsPage() {
   const [search, setSearch] = useState('')
   const [page, setPage]     = useState(1)
   const [limit, setLimit]   = useState(20)
@@ -40,14 +40,14 @@ export default function GenresPage() {
   const debouncedSearch = useDebounce(search, 400)
   const activeSearch    = debouncedSearch.length >= 3 ? debouncedSearch : undefined
 
-  const { data, isLoading } = useGenres({ search: activeSearch, page, limit, status })
-  const createGenre = useCreateGenre()
-  const updateGenre = useUpdateGenre()
-  const deleteGenre   = useDeleteGenre()
-  const restoreGenre  = useRestoreGenre()
+  const { data, isLoading } = useAuthors({ search: activeSearch, page, limit, status })
+  const createAuthor = useCreateAuthor()
+  const updateAuthor = useUpdateAuthor()
+  const deleteAuthor   = useDeleteAuthor()
+  const restoreAuthor  = useRestoreAuthor()
 
-  const { register, handleSubmit, formState: { errors, isSubmitting }, reset, setError } = useForm<GenreBodyDto>({
-    resolver: zodResolver(GenreBodySchema),
+  const { register, handleSubmit, formState: { errors, isSubmitting }, reset, setError } = useForm<AuthorBodyDto>({
+    resolver: zodResolver(AuthorBodySchema),
   })
 
   function openCreate() {
@@ -55,9 +55,9 @@ export default function GenresPage() {
     setModal({ mode: 'create' })
   }
 
-  function openEdit(genre: Genre) {
-    reset({ name: genre.name })
-    setModal({ mode: 'edit', genre })
+  function openEdit(author: Author) {
+    reset({ name: author.name })
+    setModal({ mode: 'edit', author })
   }
 
   function closeModal() {
@@ -65,10 +65,10 @@ export default function GenresPage() {
     reset()
   }
 
-  async function onSubmit(dto: GenreBodyDto) {
+  async function onSubmit(dto: AuthorBodyDto) {
     try {
-      if (modal.mode === 'create') await createGenre.mutateAsync(dto)
-      else if (modal.mode === 'edit') await updateGenre.mutateAsync({ id: modal.genre.id, dto })
+      if (modal.mode === 'create') await createAuthor.mutateAsync(dto)
+      else if (modal.mode === 'edit') await updateAuthor.mutateAsync({ id: modal.author.id, dto })
       closeModal()
     } catch (err) {
       if (err instanceof ApiError) setError('name', { message: err.error.message })
@@ -78,9 +78,9 @@ export default function GenresPage() {
   async function handleConfirm() {
     try {
       if (confirm.mode === 'delete') {
-        await deleteGenre.mutateAsync(confirm.genre.id)
+        await deleteAuthor.mutateAsync(confirm.author.id)
       } else if (confirm.mode === 'restore') {
-        await restoreGenre.mutateAsync(confirm.genre.id)
+        await restoreAuthor.mutateAsync(confirm.author.id)
       }
     } finally {
       setConfirm({ mode: 'closed' })
@@ -96,10 +96,10 @@ export default function GenresPage() {
 
   const hasFilters = status !== 'active' || debouncedSearch.length >= 3
 
-  const columns = useGenreColumns({
+  const columns = useAuthorColumns({
     onEdit:    openEdit,
-    onDelete:  g => setConfirm({ mode: 'delete',  genre: g }),
-    onRestore: g => setConfirm({ mode: 'restore', genre: g }),
+    onDelete:  a => setConfirm({ mode: 'delete',  author: a }),
+    onRestore: a => setConfirm({ mode: 'restore', author: a }),
   })
 
   return (
@@ -107,14 +107,14 @@ export default function GenresPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="font-serif text-3xl font-bold text-text-primary">Géneros</h1>
+          <h1 className="font-serif text-3xl font-bold text-text-primary">Autores</h1>
           <p className="font-sans text-sm text-text-secondary mt-1">
-            {data ? `${data.total} géneros` : ' '}
+            {data ? `${data.total} autores` : ' '}
           </p>
         </div>
         <Button onClick={openCreate}>
           <Plus size={16} className="mr-2" />
-          Nuevo género
+          Nuevo autor
         </Button>
       </div>
 
@@ -124,7 +124,7 @@ export default function GenresPage() {
           {/* Search pill */}
           <div className="flex-1 max-w-sm">
             <Input
-              placeholder="Buscar género..."
+              placeholder="Buscar autor..."
               value={search}
               onChange={e => { setSearch(e.target.value); setPage(1) }}
               startIcon={<Search size={15} />}
@@ -183,7 +183,7 @@ export default function GenresPage() {
             columns={columns}
             data={data?.items ?? []}
             keyField="id"
-            emptyMessage="No se encontraron géneros."
+            emptyMessage="No se encontraron autores."
           />
         )}
       </div>
@@ -197,7 +197,7 @@ export default function GenresPage() {
           limit={limit}
           onPageChange={setPage}
           onLimitChange={setLimit}
-          itemLabel="géneros"
+          itemLabel="autores"
         />
       )}
       </div>
@@ -205,17 +205,17 @@ export default function GenresPage() {
       {/* Confirm delete / restore */}
       <ConfirmModal
         open={confirm.mode !== 'closed'}
-        title={confirm.mode === 'delete' ? 'Eliminar género' : 'Activar género'}
+        title={confirm.mode === 'delete' ? 'Eliminar autor' : 'Activar autor'}
         description={
           confirm.mode === 'delete'
-            ? `¿Estás seguro que quieres eliminar "${confirm.genre.name}"? Esta acción se puede revertir.`
+            ? `¿Estás seguro que quieres eliminar "${confirm.author.name}"? Esta acción se puede revertir.`
             : confirm.mode === 'restore'
-            ? `¿Quieres activar "${confirm.genre.name}"?`
+            ? `¿Quieres activar "${confirm.author.name}"?`
             : ''
         }
         confirmLabel={confirm.mode === 'delete' ? 'Sí, eliminar' : 'Sí, activar'}
         variant={confirm.mode === 'delete' ? 'destructive' : 'success'}
-        loading={deleteGenre.isPending || restoreGenre.isPending}
+        loading={deleteAuthor.isPending || restoreAuthor.isPending}
         onConfirm={handleConfirm}
         onCancel={() => setConfirm({ mode: 'closed' })}
       />
@@ -223,13 +223,13 @@ export default function GenresPage() {
       {/* Modal crear / editar */}
       <Modal
         open={modal.mode !== 'closed'}
-        title={modal.mode === 'create' ? 'Nuevo género' : 'Editar género'}
+        title={modal.mode === 'create' ? 'Nuevo autor' : 'Editar autor'}
         onClose={closeModal}
       >
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
           <Input
             label="Nombre"
-            placeholder="Ej. Ciencia Ficción"
+            placeholder="Ej. Gabriel García Márquez"
             error={errors.name?.message}
             {...register('name')}
           />

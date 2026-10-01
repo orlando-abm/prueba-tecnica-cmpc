@@ -9,6 +9,6 @@ import { GenresRepository } from './genres.repository.js';
   imports: [DatabaseModule, AuthModule],
   controllers: [GenresController],
   providers: [GenresService, GenresRepository],
-  exports: [GenresService, GenresRepository],
+  exports: [GenresService],
 })
 export class GenresModule {}

@@ -34,6 +34,10 @@ export class GenresRepository {
     return this.prisma.genre.findFirst({ where: { id, deletedAt: null } });
   }
 
+  findByIdRaw(id: string): Promise<Genre | null> {
+    return this.prisma.genre.findFirst({ where: { id } });
+  }
+
   findByIdDeleted(id: string): Promise<Genre | null> {
     return this.prisma.genre.findFirst({ where: { id, deletedAt: { not: null } } });
   }
