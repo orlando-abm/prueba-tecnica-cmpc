@@ -1,0 +1,127 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Enums ───────────────────────────────────────────────────────────────────
+
+enum UserRole {
+  SUPER_ADMIN
+  ADMIN
+  USER
+}
+
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+}
+
+// ─── Auth ────────────────────────────────────────────────────────────────────
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  role      UserRole @default(USER)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  profile   UserProfile?
+  auditLogs AuditLog[]
+
+  @@map("users")
+}
+
+model UserProfile {
+  id        String   @id @default(uuid())
+  name      String
+  lastname  String
+  phone     String?
+  avatarUrl String?  @map("avatar_url")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  userId String @unique @map("user_id")
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@map("user_profiles")
+}
+
+// ─── Catalog ─────────────────────────────────────────────────────────────────
+
+model Genre {
+  id    String @id @default(uuid())
+  name  String @unique
+
+  books Book[]
+
+  @@map("genres")
+}
+
+model Author {
+  id    String @id @default(uuid())
+  name  String @unique
+
+  books Book[]
+
+  @@map("authors")
+}
+
+model Publisher {
+  id    String @id @default(uuid())
+  name  String @unique
+
+  books Book[]
+
+  @@map("publishers")
+}
+
+// ─── Books ───────────────────────────────────────────────────────────────────
+
+model Book {
+  id          String    @id @default(uuid())
+  title       String
+  price       Decimal   @db.Decimal(10, 2)
+  stock       Int       @default(0)
+  imageUrl    String?   @map("image_url")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
+
+  genreId     String    @map("genre_id")
+  authorId    String    @map("author_id")
+  publisherId String    @map("publisher_id")
+
+  genre     Genre     @relation(fields: [genreId], references: [id])
+  author    Author    @relation(fields: [authorId], references: [id])
+  publisher Publisher @relation(fields: [publisherId], references: [id])
+
+  @@index([genreId])
+  @@index([authorId])
+  @@index([publisherId])
+  @@index([deletedAt])
+  @@map("books")
+}
+
+// ─── Audit ───────────────────────────────────────────────────────────────────
+
+model AuditLog {
+  id        String      @id @default(uuid())
+  action    AuditAction
+  entity    String
+  entityId  String      @map("entity_id")
+  metadata  Json
+  createdAt DateTime    @default(now()) @map("created_at")
+
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@index([entity, entityId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
