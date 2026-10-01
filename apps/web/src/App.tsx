@@ -7,6 +7,7 @@ import AuthorsPage from './pages/authors/AuthorsPage';
 import PublishersPage from './pages/publishers/PublishersPage';
 import BooksPage from './pages/books/BooksPage';
 import BookDetailPage from './pages/books/BookDetailPage';
+import AuditLogsPage from './pages/audit/AuditLogsPage';
 
 export default function App() {
   return (
@@ -21,6 +22,7 @@ export default function App() {
           <Route path="/publishers" element={<PublishersPage />} />
           <Route path="/books" element={<BooksPage />} />
           <Route path="/books/:slug" element={<BookDetailPage />} />
+          <Route path="/audit" element={<AuditLogsPage />} />
         </Route>
       </Routes>
       </NuqsAdapter>

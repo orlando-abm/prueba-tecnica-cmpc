@@ -11,6 +11,7 @@ import type { PaginatedResponse } from '@repo/shared/types/pagination.types';
 import { GenresRepository } from './genres.repository.js';
 import { GENRE_ERRORS } from './genres.errors.js';
 import type { GenreFiltersDto } from './genres.schema.js';
+import { AuditService, AuditAction } from '@/modules/audit/audit.service.js';
 
 @Injectable()
 export class GenresService {
@@ -18,6 +19,7 @@ export class GenresService {
     @InjectPinoLogger(GenresService.name)
     private readonly logger: PinoLogger,
     private readonly genres: GenresRepository,
+    private readonly audit: AuditService,
   ) {}
 
   findAll(filters: GenreFiltersDto): Promise<PaginatedResponse<Genre>> {
@@ -50,6 +52,7 @@ export class GenresService {
     });
     const genre = await this.genres.create(name, slug);
     this.logger.info({ genreId: genre.id }, 'Género creado');
+    this.audit.log(AuditAction.CREATE, 'Genre', genre.id, { name });
     return genre;
   }
 
@@ -72,6 +75,7 @@ export class GenresService {
     }
     const genre = await this.genres.update(id, name, slug);
     this.logger.info({ genreId: genre.id }, 'Género actualizado');
+    this.audit.log(AuditAction.UPDATE, 'Genre', genre.id, { name });
     return genre;
   }
 
@@ -94,6 +98,7 @@ export class GenresService {
     }
     await this.genres.softDelete(id);
     this.logger.info({ genreId: id }, 'Género eliminado');
+    this.audit.log(AuditAction.DELETE, 'Genre', id, {});
   }
 
   async restore(id: string): Promise<Genre> {
@@ -115,6 +120,7 @@ export class GenresService {
     }
     const restored = await this.genres.restore(id);
     this.logger.info({ genreId: id }, 'Género restaurado');
+    this.audit.log(AuditAction.UPDATE, 'Genre', id, { restored: true });
     return restored;
   }
 }

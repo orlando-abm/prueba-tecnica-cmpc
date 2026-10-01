@@ -40,4 +40,7 @@ export const ENDPOINTS = {
   storage: {
     uploadImage: '/storage/image',
   },
+  auditLogs: {
+    findAll: '/audit-logs',
+  },
 } as const;

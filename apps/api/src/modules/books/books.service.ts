@@ -12,6 +12,7 @@ import type { PaginatedResponse } from '@repo/shared/types/pagination.types';
 import { BooksRepository, type BookWithRelations } from './books.repository.js';
 import { BOOK_ERRORS } from './books.errors.js';
 import type { BookBodyDto, BookFiltersDto } from './books.schema.js';
+import { AuditService, AuditAction } from '@/modules/audit/audit.service.js';
 
 @Injectable()
 export class BooksService {
@@ -20,6 +21,7 @@ export class BooksService {
     private readonly logger: PinoLogger,
     private readonly books: BooksRepository,
     private readonly prisma: PrismaService,
+    private readonly audit: AuditService,
   ) {}
 
   findAll(filters: BookFiltersDto): Promise<PaginatedResponse<BookWithRelations>> {
@@ -82,6 +84,12 @@ export class BooksService {
       throw this.mapSlugConflict(error);
     }
     this.logger.info({ bookId: book.id }, 'Libro creado');
+    this.audit.log(AuditAction.CREATE, 'Book', book.id, {
+      title: book.title,
+      slug: book.slug,
+      price: book.price,
+      stock: book.stock,
+    });
     return book;
   }
 
@@ -153,6 +161,11 @@ export class BooksService {
       throw this.mapSlugConflict(error);
     }
     this.logger.info({ bookId: book.id }, 'Libro actualizado');
+    this.audit.log(AuditAction.UPDATE, 'Book', book.id, {
+      title: book.title,
+      price: book.price,
+      stock: book.stock,
+    });
     return book;
   }
 
@@ -175,6 +188,7 @@ export class BooksService {
     }
     await this.books.softDelete(id);
     this.logger.info({ bookId: id }, 'Libro eliminado');
+    this.audit.log(AuditAction.DELETE, 'Book', id, {});
   }
 
   async restore(id: string): Promise<BookWithRelations> {
@@ -196,6 +210,7 @@ export class BooksService {
     }
     const restored = await this.books.restore(id);
     this.logger.info({ bookId: id }, 'Libro restaurado');
+    this.audit.log(AuditAction.UPDATE, 'Book', id, { restored: true });
     return restored;
   }
 

@@ -11,6 +11,7 @@ import type { PaginatedResponse } from '@repo/shared/types/pagination.types';
 import { AuthorsRepository } from './authors.repository.js';
 import { AUTHOR_ERRORS } from './authors.errors.js';
 import type { AuthorFiltersDto } from './authors.schema.js';
+import { AuditService, AuditAction } from '@/modules/audit/audit.service.js';
 
 @Injectable()
 export class AuthorsService {
@@ -18,6 +19,7 @@ export class AuthorsService {
     @InjectPinoLogger(AuthorsService.name)
     private readonly logger: PinoLogger,
     private readonly authors: AuthorsRepository,
+    private readonly audit: AuditService,
   ) {}
 
   findAll(filters: AuthorFiltersDto): Promise<PaginatedResponse<Author>> {
@@ -50,6 +52,7 @@ export class AuthorsService {
     });
     const author = await this.authors.create(name, slug);
     this.logger.info({ authorId: author.id }, 'Autor creado');
+    this.audit.log(AuditAction.CREATE, 'Author', author.id, { name });
     return author;
   }
 
@@ -72,6 +75,7 @@ export class AuthorsService {
     }
     const author = await this.authors.update(id, name, slug);
     this.logger.info({ authorId: author.id }, 'Autor actualizado');
+    this.audit.log(AuditAction.UPDATE, 'Author', author.id, { name });
     return author;
   }
 
@@ -94,6 +98,7 @@ export class AuthorsService {
     }
     await this.authors.softDelete(id);
     this.logger.info({ authorId: id }, 'Autor eliminado');
+    this.audit.log(AuditAction.DELETE, 'Author', id, {});
   }
 
   async restore(id: string): Promise<Author> {
@@ -115,6 +120,7 @@ export class AuthorsService {
     }
     const restored = await this.authors.restore(id);
     this.logger.info({ authorId: id }, 'Autor restaurado');
+    this.audit.log(AuditAction.UPDATE, 'Author', id, { restored: true });
     return restored;
   }
 }

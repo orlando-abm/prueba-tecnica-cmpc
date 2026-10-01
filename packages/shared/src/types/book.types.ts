@@ -17,7 +17,7 @@ export interface Book {
   genreId: string;
   authorId: string;
   publisherId: string;
-  genre?: { id: string; name: string };
-  author?: { id: string; name: string };
-  publisher?: { id: string; name: string };
+  genre?: { id: string; name: string; slug: string };
+  author?: { id: string; name: string; slug: string };
+  publisher?: { id: string; name: string; slug: string };
 }

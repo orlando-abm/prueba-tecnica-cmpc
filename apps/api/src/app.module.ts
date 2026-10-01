@@ -11,6 +11,7 @@ import { AuthorsModule } from '@/modules/authors/authors.module.js';
 import { PublishersModule } from '@/modules/publishers/publishers.module.js';
 import { BooksModule } from '@/modules/books/books.module.js';
 import { StorageModule } from '@/modules/storage/storage.module.js';
+import { AuditModule } from '@/modules/audit/audit.module.js';
 import { CorrelationIdMiddleware } from '@/common/middlewares/correlation-id.middleware.js';
 import { loggerConfig } from '@/config/logger.config.js';
 import { validateEnv } from '@/config/env.config.js';
@@ -27,6 +28,7 @@ import { validateEnv } from '@/config/env.config.js';
     PublishersModule,
     BooksModule,
     StorageModule,
+    AuditModule,
   ],
   controllers: [AppController],
   providers: [AppService],

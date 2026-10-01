@@ -7,6 +7,7 @@ import { corsConfig } from '@/config/cors.config.js';
 import { ZodExceptionFilter } from '@/common/filters/zod-exception.filter.js';
 import { HttpExceptionFilter } from '@/common/filters/http-exception.filter.js';
 import { ResponseInterceptor } from '@/common/interceptors/response.interceptor.js';
+import { UserContextInterceptor } from '@/common/interceptors/user-context.interceptor.js';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { bufferLogs: true });
@@ -16,7 +17,7 @@ async function bootstrap() {
   app.enableCors(corsConfig);
   app.useGlobalPipes(new ZodValidationPipe());
   app.useGlobalFilters(new HttpExceptionFilter(), new ZodExceptionFilter());
-  app.useGlobalInterceptors(new ResponseInterceptor());
+  app.useGlobalInterceptors(new ResponseInterceptor(), new UserContextInterceptor());
 
   setupSwagger(app);
 
