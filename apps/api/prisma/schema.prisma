@@ -1,10 +1,12 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [citext]
 }
 
 // ─── Enums ───────────────────────────────────────────────────────────────────
@@ -25,7 +27,7 @@ enum AuditAction {
 
 model User {
   id        String   @id @default(uuid())
-  email     String   @unique
+  email     String   @unique @db.Citext
   password  String
   role      UserRole @default(USER)
   createdAt DateTime @default(now()) @map("created_at")
@@ -55,29 +57,41 @@ model UserProfile {
 // ─── Catalog ─────────────────────────────────────────────────────────────────
 
 model Genre {
-  id    String @id @default(uuid())
-  name  String @unique
+  id        String    @id @default(uuid())
+  name      String    @unique @db.Citext
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
 
   books Book[]
 
+  @@index([deletedAt])
   @@map("genres")
 }
 
 model Author {
-  id    String @id @default(uuid())
-  name  String @unique
+  id        String    @id @default(uuid())
+  name      String    @unique @db.Citext
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
 
   books Book[]
 
+  @@index([deletedAt])
   @@map("authors")
 }
 
 model Publisher {
-  id    String @id @default(uuid())
-  name  String @unique
+  id        String    @id @default(uuid())
+  name      String    @unique @db.Citext
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
 
   books Book[]
 
+  @@index([deletedAt])
   @@map("publishers")
 }
 
@@ -85,7 +99,13 @@ model Publisher {
 
 model Book {
   id          String    @id @default(uuid())
-  title       String
+  title       String    @db.Citext
+  isbn        String?   @unique
+  sku         String?   @unique
+  synopsis    String?   @db.Text
+  language    String?
+  pages       Int?
+  year        Int?
   price       Decimal   @db.Decimal(10, 2)
   stock       Int       @default(0)
   imageUrl    String?   @map("image_url")
@@ -121,6 +141,7 @@ model AuditLog {
   userId String @map("user_id")
   user   User   @relation(fields: [userId], references: [id])
 
+  @@index([userId])
   @@index([entity, entityId])
   @@index([createdAt])
   @@map("audit_logs")

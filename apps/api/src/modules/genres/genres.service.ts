@@ -1,0 +1,75 @@
+import { BadRequestException, Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
+import type { Genre } from '@prisma/client';
+import type { PaginatedResponse } from '@repo/shared/types/pagination.types';
+import { GenresRepository } from './genres.repository.js';
+import { GENRE_ERRORS } from './genres.errors.js';
+import type { GenreFiltersDto } from './genres.schema.js';
+
+@Injectable()
+export class GenresService {
+  constructor(
+    @InjectPinoLogger(GenresService.name)
+    private readonly logger: PinoLogger,
+    private readonly genres: GenresRepository,
+  ) {}
+
+  findAll(filters: GenreFiltersDto): Promise<PaginatedResponse<Genre>> {
+    this.logger.info({ filters }, 'Listar géneros');
+    return this.genres.findAll(filters);
+  }
+
+  async findById(id: string): Promise<Genre> {
+    this.logger.info({ id }, 'Obtener género por id');
+    const genre = await this.genres.findById(id);
+    if (!genre) {
+      this.logger.warn({ id, code: GENRE_ERRORS.NOT_FOUND.code }, 'Género no encontrado');
+      throw new NotFoundException(GENRE_ERRORS.NOT_FOUND);
+    }
+    return genre;
+  }
+
+  async create(name: string): Promise<Genre> {
+    this.logger.info({ name }, 'Crear género');
+    const existing = await this.genres.findByName(name);
+    if (existing) {
+      this.logger.warn({ name, code: GENRE_ERRORS.DUPLICATE.code }, 'Crear fallido — género ya existe');
+      throw new ConflictException(GENRE_ERRORS.DUPLICATE);
+    }
+    const genre = await this.genres.create(name);
+    this.logger.info({ genreId: genre.id }, 'Género creado');
+    return genre;
+  }
+
+  async update(id: string, name: string): Promise<Genre> {
+    this.logger.info({ id, name }, 'Actualizar género');
+    await this.findById(id);
+    const existing = await this.genres.findByName(name);
+    if (existing && existing.id !== id) {
+      this.logger.warn({ id, name, code: GENRE_ERRORS.DUPLICATE.code }, 'Actualizar fallido — género ya existe');
+      throw new ConflictException(GENRE_ERRORS.DUPLICATE);
+    }
+    const genre = await this.genres.update(id, name);
+    this.logger.info({ genreId: genre.id }, 'Género actualizado');
+    return genre;
+  }
+
+  async softDelete(id: string): Promise<void> {
+    this.logger.info({ id }, 'Eliminar género');
+    await this.findById(id);
+    await this.genres.softDelete(id);
+    this.logger.info({ genreId: id }, 'Género eliminado');
+  }
+
+  async restore(id: string): Promise<Genre> {
+    this.logger.info({ id }, 'Restaurar género');
+    const genre = await this.genres.findByIdDeleted(id);
+    if (!genre) {
+      this.logger.warn({ id, code: GENRE_ERRORS.NOT_DELETED.code }, 'Restaurar fallido — género no está eliminado');
+      throw new BadRequestException(GENRE_ERRORS.NOT_DELETED);
+    }
+    const restored = await this.genres.restore(id);
+    this.logger.info({ genreId: id }, 'Género restaurado');
+    return restored;
+  }
+}

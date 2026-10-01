@@ -6,6 +6,7 @@ import { AppService } from './app.service.js';
 import { DatabaseModule } from '@/database/database.module.js';
 import { UsersModule } from '@/modules/users/users.module.js';
 import { AuthModule } from '@/modules/auth/auth.module.js';
+import { GenresModule } from '@/modules/genres/genres.module.js';
 import { CorrelationIdMiddleware } from '@/common/middlewares/correlation-id.middleware.js';
 import { loggerConfig } from '@/config/logger.config.js';
 import { validateEnv } from '@/config/env.config.js';
@@ -17,6 +18,7 @@ import { validateEnv } from '@/config/env.config.js';
     DatabaseModule,
     UsersModule,
     AuthModule,
+    GenresModule,
   ],
   controllers: [AppController],
   providers: [AppService],
