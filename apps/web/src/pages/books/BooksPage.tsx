@@ -1,30 +1,21 @@
 import { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
+import { useNavigate } from 'react-router';
+import { useQueryStates, parseAsString, parseAsInteger, parseAsStringLiteral } from 'nuqs';
 import { Search, Plus, X, Download, List, LayoutGrid } from 'lucide-react';
-import { BookBodySchema, type BookBodyDto } from '@repo/shared/schemas/book.schema';
 import type { Book } from '@repo/shared/types/book.types';
-import {
-  useBooks,
-  useCreateBook,
-  useUpdateBook,
-  useDeleteBook,
-  useRestoreBook,
-  useExportBooks,
-} from '@/hooks/useBooks';
-import { useGenres, useCreateGenre } from '@/hooks/useGenres';
-import { useAuthors, useCreateAuthor } from '@/hooks/useAuthors';
-import { usePublishers, useCreatePublisher } from '@/hooks/usePublishers';
+import { useBooks, useDeleteBook, useRestoreBook, useExportBooks } from '@/hooks/useBooks';
+import { useGenres } from '@/hooks/useGenres';
+import { useAuthors } from '@/hooks/useAuthors';
+import { usePublishers } from '@/hooks/usePublishers';
 import { useDebounce } from '@/hooks/useDebounce';
+import { useBookStore } from '@/store/bookStore';
 import { useBookColumns } from './useBookColumns';
 import { BookCard } from './BookCard';
-import { ImageDropzone } from './ImageDropzone';
-import { uploadService } from '@/services/upload.service';
-import { Button, Input, Modal, Select, SearchSelect, ConfirmModal } from '@/ui/atoms';
+import { BookFormModal } from './BookFormModal';
+import { Button, Input, Select, SearchSelect, ConfirmModal } from '@/ui/atoms';
 import { Table, Pagination } from '@/ui/organisms';
-import { ApiError } from '@/lib/http';
 
-type ModalState = { mode: 'closed' } | { mode: 'create' } | { mode: 'edit'; book: Book };
+type ModalState = { open: false } | { open: true; book: Book | null };
 
 type ConfirmState =
   | { mode: 'closed' }
@@ -47,37 +38,50 @@ const AVAILABLE_OPTIONS: { value: AvailableFilter; label: string }[] = [
   { value: 'false', label: 'Sin stock' },
 ];
 
-const emptyToUndefined = (v: string) => (v === '' || v == null ? undefined : v);
-const numberOrUndefined = (v: string) => {
-  if (v === '' || v == null) return undefined;
-  const n = Number(v);
-  return Number.isNaN(n) ? undefined : n;
-};
-
 export default function BooksPage() {
-  const [search, setSearch] = useState('');
-  const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(20);
-  const [status, setStatus] = useState<StatusFilter>('active');
+  const navigate = useNavigate();
+  const setSelectedBook = useBookStore((s) => s.setSelectedBook);
   const [view, setView] = useState<ViewMode>('grid');
-  const [genreId, setGenreId] = useState('');
-  const [authorId, setAuthorId] = useState('');
-  const [publisherId, setPublisherId] = useState('');
-  const [available, setAvailable] = useState<AvailableFilter>('');
-  const [sortBy, setSortBy] = useState<'title' | 'price' | 'stock' | 'year' | 'createdAt'>('title');
-  const [order, setOrder] = useState<'asc' | 'desc'>('asc');
-  const [modal, setModal] = useState<ModalState>({ mode: 'closed' });
+  const [modal, setModal] = useState<ModalState>({ open: false });
   const [confirm, setConfirm] = useState<ConfirmState>({ mode: 'closed' });
-  const [uploading, setUploading] = useState(false);
+
+  const [filters, setFilters] = useQueryStates({
+    q:           parseAsString.withDefault(''),
+    page:        parseAsInteger.withDefault(1),
+    limit:       parseAsInteger.withDefault(20),
+    status:      parseAsStringLiteral(['active', 'inactive', 'all'] as const).withDefault('active'),
+    genreId:     parseAsString.withDefault(''),
+    authorId:    parseAsString.withDefault(''),
+    publisherId: parseAsString.withDefault(''),
+    available:   parseAsStringLiteral(['true', 'false', ''] as const).withDefault(''),
+    sortBy:      parseAsStringLiteral(['title', 'price', 'stock', 'year', 'createdAt'] as const).withDefault('title'),
+    order:       parseAsStringLiteral(['asc', 'desc'] as const).withDefault('asc'),
+  }, { history: 'replace', shallow: true });
+
+  const { q: search, page, limit, status, genreId, authorId, publisherId, available, sortBy, order } = filters;
+
+  function setSearch(val: string)           { setFilters({ q: val || null, page: null }); }
+  function setPage(val: number)             { setFilters({ page: val > 1 ? val : null }); }
+  function setLimit(val: number)            { setFilters({ limit: val !== 20 ? val : null, page: null }); }
+  function setStatus(val: StatusFilter)     { setFilters({ status: val !== 'active' ? val : null, page: null }); }
+  function setGenreId(val: string)          { setFilters({ genreId: val || null, page: null }); }
+  function setAuthorId(val: string)         { setFilters({ authorId: val || null, page: null }); }
+  function setPublisherId(val: string)      { setFilters({ publisherId: val || null, page: null }); }
+  function setAvailable(val: AvailableFilter) { setFilters({ available: val || null, page: null }); }
+
+  const debouncedSearch = useDebounce(search, 400);
 
   function handleSort(key: string) {
     const k = key as typeof sortBy;
-    if (k === sortBy) setOrder((o) => (o === 'asc' ? 'desc' : 'asc'));
-    else { setSortBy(k); setOrder('asc'); }
-    setPage(1);
+    if (k === sortBy) setFilters({ order: order === 'asc' ? 'desc' : 'asc', page: null });
+    else setFilters({ sortBy: k, order: null, page: null });
   }
 
-  const debouncedSearch = useDebounce(search, 400);
+  function openBook(book: Book) {
+    setSelectedBook(book);
+    navigate(`/books/${book.slug}`);
+  }
+
   const activeSearch = debouncedSearch.length >= 3 ? debouncedSearch : undefined;
 
   const { data: genresData } = useGenres({ status: 'active', limit: 100 });
@@ -98,31 +102,9 @@ export default function BooksPage() {
     include: ['genre', 'author', 'publisher'],
   });
 
-  const createBook = useCreateBook();
-  const updateBook = useUpdateBook();
   const deleteBook = useDeleteBook();
   const restoreBook = useRestoreBook();
   const exportBooks = useExportBooks();
-  const createGenre = useCreateGenre();
-  const createAuthor = useCreateAuthor();
-  const createPublisher = useCreatePublisher();
-
-  const {
-    register,
-    handleSubmit,
-    watch,
-    setValue,
-    formState: { errors, isSubmitting },
-    reset,
-    setError,
-  } = useForm({
-    resolver: zodResolver(BookBodySchema),
-  });
-
-  const formGenreId = watch('genreId');
-  const formAuthorId = watch('authorId');
-  const formPublisherId = watch('publisherId');
-  const formImageUrl = watch('imageUrl');
 
   const genreOptions = (genresData?.items ?? []).map((g) => ({ value: g.id, label: g.name }));
   const authorOptions = (authorsData?.items ?? []).map((a) => ({ value: a.id, label: a.name }));
@@ -135,80 +117,8 @@ export default function BooksPage() {
   const activeAuthorName = authorOptions.find((o) => o.value === authorId)?.label;
   const activePublisherName = publisherOptions.find((o) => o.value === publisherId)?.label;
 
-  function openCreate() {
-    reset({ title: '', isbn: '', sku: '', synopsis: '', language: '', imageUrl: '' });
-    setModal({ mode: 'create' });
-  }
-
-  function openEdit(book: Book) {
-    reset({
-      title: book.title,
-      authorId: book.authorId,
-      publisherId: book.publisherId,
-      genreId: book.genreId,
-      price: Number(book.price),
-      stock: book.stock,
-      isbn: book.isbn ?? '',
-      sku: book.sku ?? '',
-      language: book.language ?? '',
-      year: book.year ?? undefined,
-      pages: book.pages ?? undefined,
-      synopsis: book.synopsis ?? '',
-      imageUrl: book.imageUrl ?? '',
-    });
-    setModal({ mode: 'edit', book });
-  }
-
   function closeModal() {
-    setModal({ mode: 'closed' });
-    reset();
-  }
-
-  async function onSubmit(dto: BookBodyDto) {
-    try {
-      if (modal.mode === 'create') await createBook.mutateAsync(dto);
-      else if (modal.mode === 'edit') await updateBook.mutateAsync({ id: modal.book.id, dto });
-      closeModal();
-    } catch (err) {
-      if (err instanceof ApiError) {
-        const message = err.error.message;
-        switch (err.error.code) {
-          case 'BOOK_002':
-          case 'BOOK_006':
-            setError('isbn', { message });
-            break;
-          case 'BOOK_003':
-          case 'BOOK_007':
-            setError('sku', { message });
-            break;
-          case 'BOOK_008':
-            setError('genreId', { message });
-            break;
-          case 'BOOK_009':
-            setError('authorId', { message });
-            break;
-          case 'BOOK_010':
-            setError('publisherId', { message });
-            break;
-          default:
-            setError('title', { message });
-        }
-      }
-    }
-  }
-
-  async function processImageFile(file: File) {
-    setUploading(true);
-    try {
-      const url = await uploadService.image(file);
-      setValue('imageUrl', url, { shouldValidate: true });
-    } catch (err) {
-      setError('imageUrl', {
-        message: err instanceof ApiError ? err.error.message : 'No se pudo subir la imagen',
-      });
-    } finally {
-      setUploading(false);
-    }
+    setModal({ open: false });
   }
 
   async function handleConfirm() {
@@ -235,14 +145,7 @@ export default function BooksPage() {
   }
 
   function clearFilters() {
-    setStatus('active');
-    setSearch('');
-    setPage(1);
-    setLimit(20);
-    setGenreId('');
-    setAuthorId('');
-    setPublisherId('');
-    setAvailable('');
+    setFilters({ q: null, page: null, limit: null, status: null, genreId: null, authorId: null, publisherId: null, available: null, sortBy: null, order: null });
   }
 
   const hasFilters =
@@ -254,7 +157,7 @@ export default function BooksPage() {
     !!available;
 
   const columns = useBookColumns({
-    onEdit: openEdit,
+    onEdit: (b) => setModal({ open: true, book: b }),
     onDelete: (b) => setConfirm({ mode: 'delete', book: b }),
     onRestore: (b) => setConfirm({ mode: 'restore', book: b }),
   });
@@ -269,7 +172,7 @@ export default function BooksPage() {
             {data ? `${data.total} libros` : ' '}
           </p>
         </div>
-        <Button onClick={openCreate}>
+        <Button onClick={() => setModal({ open: true, book: null })}>
           <Plus size={16} className="mr-2" />
           Nuevo libro
         </Button>
@@ -324,8 +227,14 @@ export default function BooksPage() {
               value={genreId}
               options={genreOptions}
               placeholder="Género"
-              onChange={(val) => { setGenreId(val); setPage(1); }}
-              onClear={() => { setGenreId(''); setPage(1); }}
+              onChange={(val) => {
+                setGenreId(val);
+                setPage(1);
+              }}
+              onClear={() => {
+                setGenreId('');
+                setPage(1);
+              }}
             />
           </div>
 
@@ -335,8 +244,14 @@ export default function BooksPage() {
               value={authorId}
               options={authorOptions}
               placeholder="Autor"
-              onChange={(val) => { setAuthorId(val); setPage(1); }}
-              onClear={() => { setAuthorId(''); setPage(1); }}
+              onChange={(val) => {
+                setAuthorId(val);
+                setPage(1);
+              }}
+              onClear={() => {
+                setAuthorId('');
+                setPage(1);
+              }}
             />
           </div>
 
@@ -346,8 +261,14 @@ export default function BooksPage() {
               value={publisherId}
               options={publisherOptions}
               placeholder="Editorial"
-              onChange={(val) => { setPublisherId(val); setPage(1); }}
-              onClear={() => { setPublisherId(''); setPage(1); }}
+              onChange={(val) => {
+                setPublisherId(val);
+                setPage(1);
+              }}
+              onClear={() => {
+                setPublisherId('');
+                setPage(1);
+              }}
             />
           </div>
 
@@ -517,6 +438,7 @@ export default function BooksPage() {
                 sortBy={sortBy}
                 order={order}
                 onSort={handleSort}
+                onRowClick={openBook}
               />
             )}
           </div>
@@ -536,7 +458,8 @@ export default function BooksPage() {
                 <BookCard
                   key={book.id}
                   book={book}
-                  onEdit={openEdit}
+                  onOpen={openBook}
+                  onEdit={(b) => setModal({ open: true, book: b })}
                   onDelete={(b) => setConfirm({ mode: 'delete', book: b })}
                   onRestore={(b) => setConfirm({ mode: 'restore', book: b })}
                 />
@@ -578,167 +501,7 @@ export default function BooksPage() {
       />
 
       {/* Modal crear / editar */}
-      <Modal
-        open={modal.mode !== 'closed'}
-        title={modal.mode === 'create' ? 'Nuevo libro' : 'Editar libro'}
-        onClose={closeModal}
-      >
-        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
-          <Input
-            label="Título"
-            placeholder="Ej. Cien años de soledad"
-            error={errors.title?.message}
-            {...register('title')}
-          />
-
-          <div className="grid grid-cols-2 gap-3">
-            <SearchSelect
-              label="Autor"
-              value={formAuthorId}
-              options={authorOptions}
-              placeholder="Seleccionar autor"
-              error={errors.authorId?.message}
-              adding={createAuthor.isPending}
-              onChange={(val) =>
-                setValue('authorId', val, { shouldValidate: true, shouldDirty: true })
-              }
-              onAdd={async (name) => {
-                if (!name) return;
-                const created = await createAuthor.mutateAsync({ name });
-                setValue('authorId', created.id, { shouldValidate: true, shouldDirty: true });
-              }}
-            />
-            <SearchSelect
-              label="Editorial"
-              value={formPublisherId}
-              options={publisherOptions}
-              placeholder="Seleccionar editorial"
-              error={errors.publisherId?.message}
-              adding={createPublisher.isPending}
-              onChange={(val) =>
-                setValue('publisherId', val, { shouldValidate: true, shouldDirty: true })
-              }
-              onAdd={async (name) => {
-                if (!name) return;
-                const created = await createPublisher.mutateAsync({ name });
-                setValue('publisherId', created.id, { shouldValidate: true, shouldDirty: true });
-              }}
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <SearchSelect
-              label="Género"
-              value={formGenreId}
-              options={genreOptions}
-              placeholder="Seleccionar género"
-              error={errors.genreId?.message}
-              adding={createGenre.isPending}
-              onChange={(val) =>
-                setValue('genreId', val, { shouldValidate: true, shouldDirty: true })
-              }
-              onAdd={async (name) => {
-                if (!name) return;
-                const created = await createGenre.mutateAsync({ name });
-                setValue('genreId', created.id, { shouldValidate: true, shouldDirty: true });
-              }}
-            />
-            <Input
-              label="Precio"
-              inputMode="numeric"
-              placeholder="0"
-              error={errors.price?.message}
-              {...register('price')}
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <Input
-              label="Stock"
-              inputMode="numeric"
-              placeholder="0"
-              error={errors.stock?.message}
-              {...register('stock')}
-            />
-            <Input
-              label="Año"
-              inputMode="numeric"
-              placeholder="Opcional"
-              error={errors.year?.message}
-              {...register('year', { setValueAs: numberOrUndefined })}
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <Input
-              label="Páginas"
-              inputMode="numeric"
-              placeholder="Opcional"
-              error={errors.pages?.message}
-              {...register('pages', { setValueAs: numberOrUndefined })}
-            />
-            <Input
-              label="Idioma"
-              placeholder="Opcional"
-              error={errors.language?.message}
-              {...register('language', { setValueAs: emptyToUndefined })}
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <Input
-              label="ISBN"
-              placeholder="Opcional"
-              error={errors.isbn?.message}
-              {...register('isbn', { setValueAs: emptyToUndefined })}
-            />
-            <Input
-              label="SKU"
-              placeholder="Opcional"
-              error={errors.sku?.message}
-              {...register('sku', { setValueAs: emptyToUndefined })}
-            />
-          </div>
-
-          <ImageDropzone
-            value={formImageUrl}
-            uploading={uploading}
-            error={errors.imageUrl?.message}
-            onFile={processImageFile}
-            onClear={() => setValue('imageUrl', '', { shouldValidate: true })}
-          />
-
-          <div className="flex flex-col gap-1.5 w-full">
-            <label
-              htmlFor="synopsis"
-              className="text-text-primary font-sans text-[13px] font-medium"
-            >
-              Sinopsis
-            </label>
-            <textarea
-              id="synopsis"
-              rows={3}
-              placeholder="Opcional"
-              className={`w-full rounded-lg border-[1.5px] bg-surface-light px-3.5 py-2.5 text-sm font-sans text-text-primary placeholder:text-text-secondary-dark outline-none focus:outline-none focus-visible:outline-none transition-colors border-border-light focus:border-accent focus:border-2 ${
-                errors.synopsis?.message ? 'border-error' : ''
-              }`}
-              {...register('synopsis', { setValueAs: emptyToUndefined })}
-            />
-            {errors.synopsis?.message && (
-              <span className="text-error-text font-sans text-xs">{errors.synopsis.message}</span>
-            )}
-          </div>
-
-          <div className="flex gap-3 justify-end">
-            <Button type="button" variant="secondary" onClick={closeModal}>
-              Cancelar
-            </Button>
-            <Button type="submit" disabled={isSubmitting}>
-              {modal.mode === 'create' ? 'Crear' : 'Guardar'}
-            </Button>
-          </div>
-        </form>
-      </Modal>
+      <BookFormModal open={modal.open} book={modal.open ? modal.book : null} onClose={closeModal} />
     </div>
   );
 }

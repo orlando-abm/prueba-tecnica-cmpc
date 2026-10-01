@@ -10,6 +10,7 @@ import { ResponseInterceptor } from '@/common/interceptors/response.interceptor.
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { bufferLogs: true });
+  app.getHttpAdapter().getInstance().disable('etag');
 
   app.useLogger(app.get(Logger));
   app.enableCors(corsConfig);

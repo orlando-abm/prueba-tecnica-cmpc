@@ -16,6 +16,7 @@ interface TableProps<T> {
   sortBy?: string;
   order?: 'asc' | 'desc';
   onSort?: (key: string) => void;
+  onRowClick?: (row: T) => void;
 }
 
 export function Table<T>({
@@ -26,6 +27,7 @@ export function Table<T>({
   sortBy,
   order,
   onSort,
+  onRowClick,
 }: TableProps<T>) {
   return (
     <div className="w-full overflow-x-auto">
@@ -72,7 +74,8 @@ export function Table<T>({
             data.map((row) => (
               <tr
                 key={String(row[keyField])}
-                className="border-b border-border-light last:border-0 hover:bg-black/[0.02] transition-colors"
+                onClick={onRowClick ? () => onRowClick(row) : undefined}
+                className={`border-b border-border-light last:border-0 hover:bg-black/[0.02] transition-colors ${onRowClick ? 'cursor-pointer' : ''}`}
               >
                 {columns.map((col) => (
                   <td

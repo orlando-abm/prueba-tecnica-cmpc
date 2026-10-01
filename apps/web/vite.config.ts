@@ -6,6 +6,9 @@ import { resolve } from 'path'
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   resolve: {
-    alias: { '@': resolve(__dirname, 'src') },
+    alias: {
+      '@': resolve(__dirname, 'src'),
+      'react-router-dom': 'react-router',
+    },
   },
 })

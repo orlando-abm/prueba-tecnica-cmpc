@@ -77,7 +77,10 @@ export function useBookColumns({ onEdit, onDelete, onRestore }: BookColumnAction
           {b.deletedAt ? (
             <button
               type="button"
-              onClick={() => onRestore(b)}
+              onClick={(e) => {
+                e.stopPropagation();
+                onRestore(b);
+              }}
               title="Activar"
               className="p-1.5 rounded-md text-success bg-success-bg hover:bg-success hover:text-white transition-colors cursor-pointer"
             >
@@ -87,7 +90,10 @@ export function useBookColumns({ onEdit, onDelete, onRestore }: BookColumnAction
             <>
               <button
                 type="button"
-                onClick={() => onEdit(b)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEdit(b);
+                }}
                 title="Editar"
                 className="p-1.5 rounded-md text-text-secondary bg-black/5 hover:bg-black/10 hover:text-text-primary transition-colors cursor-pointer"
               >
@@ -95,7 +101,10 @@ export function useBookColumns({ onEdit, onDelete, onRestore }: BookColumnAction
               </button>
               <button
                 type="button"
-                onClick={() => onDelete(b)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDelete(b);
+                }}
                 title="Eliminar"
                 className="p-1.5 rounded-md text-error bg-error-bg hover:bg-error hover:text-white transition-colors cursor-pointer"
               >

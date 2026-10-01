@@ -5,17 +5,27 @@ import { BookCover } from './BookCover';
 
 interface BookCardProps {
   book: Book;
+  onOpen: (book: Book) => void;
   onEdit: (book: Book) => void;
   onDelete: (book: Book) => void;
   onRestore: (book: Book) => void;
 }
 
-export function BookCard({ book, onEdit, onDelete, onRestore }: BookCardProps) {
+export function BookCard({ book, onOpen, onEdit, onDelete, onRestore }: BookCardProps) {
   const isDeleted = !!book.deletedAt;
   const isAvailable = !book.deletedAt && book.stock > 0;
 
   return (
-    <div className="bg-surface-light rounded-xl border border-border-light overflow-hidden flex flex-col">
+    // biome-ignore lint/a11y/useSemanticElements: contiene botones anidados, no puede ser un <button>
+    <div
+      role="button"
+      tabIndex={0}
+      onClick={() => onOpen(book)}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter') onOpen(book);
+      }}
+      className="bg-surface-light rounded-xl border border-border-light overflow-hidden flex flex-col cursor-pointer hover:shadow-md hover:border-accent/40 transition-all"
+    >
       <div className="h-40 shrink-0">
         <BookCover src={book.imageUrl} alt={book.title} />
       </div>
@@ -50,7 +60,10 @@ export function BookCard({ book, onEdit, onDelete, onRestore }: BookCardProps) {
           {isDeleted ? (
             <button
               type="button"
-              onClick={() => onRestore(book)}
+              onClick={(e) => {
+                e.stopPropagation();
+                onRestore(book);
+              }}
               className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-xs font-semibold font-sans bg-success text-white hover:opacity-90 transition-colors cursor-pointer"
             >
               <RotateCcw size={13} />
@@ -60,7 +73,10 @@ export function BookCard({ book, onEdit, onDelete, onRestore }: BookCardProps) {
             <>
               <button
                 type="button"
-                onClick={() => onEdit(book)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEdit(book);
+                }}
                 className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-xs font-semibold font-sans text-text-secondary bg-black/5 hover:bg-black/10 hover:text-text-primary transition-colors cursor-pointer"
               >
                 <Pencil size={13} />
@@ -68,7 +84,10 @@ export function BookCard({ book, onEdit, onDelete, onRestore }: BookCardProps) {
               </button>
               <button
                 type="button"
-                onClick={() => onDelete(book)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDelete(book);
+                }}
                 className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-xs font-semibold font-sans bg-error text-white hover:opacity-90 transition-colors cursor-pointer"
               >
                 <Trash2 size={13} />

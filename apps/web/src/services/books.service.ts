@@ -9,6 +9,9 @@ export const booksService = {
   findAll: (filters: Partial<BookFilters> = {}) =>
     http.get<PaginatedResponse<Book>>(`${ENDPOINTS.books.findAll}${toQuery(filters)}`),
 
+  findBySlug: (slug: string, include: string[] = []) =>
+    http.get<Book>(`${ENDPOINTS.books.findBySlug(slug)}${toQuery({ include })}`),
+
   create: (dto: BookBodyDto) => http.post<Book>(ENDPOINTS.books.create, dto),
 
   update: (id: string, dto: BookBodyDto) => http.patch<Book>(ENDPOINTS.books.update(id), dto),
