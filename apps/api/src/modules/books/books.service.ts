@@ -298,6 +298,6 @@ export class BooksService {
         .map(esc)
         .join(','),
     );
-    return [headers.map(esc).join(','), ...rows].join('\n');
+    return '﻿' + [headers.map(esc).join(','), ...rows].join('\r\n');
   }
 }

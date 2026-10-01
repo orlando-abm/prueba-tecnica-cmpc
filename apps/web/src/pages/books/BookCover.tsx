@@ -24,6 +24,8 @@ export function BookCover({ src, alt = '' }: BookCoverProps) {
     <img
       src={src}
       alt={alt}
+      loading="lazy"
+      decoding="async"
       onError={() => setFailed(true)}
       className="object-cover w-full h-full"
     />

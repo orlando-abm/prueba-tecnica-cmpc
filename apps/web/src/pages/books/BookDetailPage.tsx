@@ -199,10 +199,12 @@ function MidSection({ book }: { book: Book }) {
 
 function SameAuthorSection({
   authorId,
+  authorSlug,
   authorName,
   currentId,
 }: {
   authorId: string;
+  authorSlug?: string;
   authorName?: string;
   currentId: string;
 }) {
@@ -231,7 +233,7 @@ function SameAuthorSection({
           Más de {authorName ?? 'este autor'}
         </h2>
         <Link
-          to={`/books?authorId=${authorId}`}
+          to={`/books?author=${authorSlug ?? authorId}`}
           className="font-sans text-sm text-accent hover:text-accent-hover transition-colors"
         >
           Ver todos →
@@ -283,6 +285,7 @@ export default function BookDetailPage() {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const setSelectedBook = useBookStore((s) => s.setSelectedBook);
   const { book, isLoading, isNotFound } = useBookDetail(slug ?? '');
 
   const [editOpen, setEditOpen] = useState(false);
@@ -320,6 +323,7 @@ export default function BookDetailPage() {
         <MidSection book={book} />
         <SameAuthorSection
           authorId={book.authorId}
+          authorSlug={book.author?.slug}
           authorName={book.author?.name}
           currentId={book.id}
         />
@@ -330,8 +334,9 @@ export default function BookDetailPage() {
         book={book}
         onClose={() => setEditOpen(false)}
         onSuccess={(saved) => {
+          setSelectedBook(saved);
           queryClient.setQueryData([BOOK_DETAIL_KEY, saved.slug], saved);
-          queryClient.invalidateQueries({ queryKey: [BOOK_DETAIL_KEY, slug] });
+          if (saved.slug !== slug) navigate(`/books/${saved.slug}`, { replace: true });
         }}
       />
 

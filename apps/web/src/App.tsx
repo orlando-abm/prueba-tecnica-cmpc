@@ -12,17 +12,17 @@ export default function App() {
   return (
     <BrowserRouter>
       <NuqsAdapter>
-        <Routes>
-          <Route path="/login" element={<LoginPage />} />
-          <Route element={<AppLayout />}>
-            <Route index element={<Navigate to="/genres" replace />} />
-            <Route path="/genres" element={<GenresPage />} />
-            <Route path="/authors" element={<AuthorsPage />} />
-            <Route path="/publishers" element={<PublishersPage />} />
-            <Route path="/books" element={<BooksPage />} />
-            <Route path="/books/:slug" element={<BookDetailPage />} />
-          </Route>
-        </Routes>
+      <Routes>
+        <Route path="/login" element={<LoginPage />} />
+        <Route element={<AppLayout />}>
+          <Route index element={<Navigate to="/genres" replace />} />
+          <Route path="/genres" element={<GenresPage />} />
+          <Route path="/authors" element={<AuthorsPage />} />
+          <Route path="/publishers" element={<PublishersPage />} />
+          <Route path="/books" element={<BooksPage />} />
+          <Route path="/books/:slug" element={<BookDetailPage />} />
+        </Route>
+      </Routes>
       </NuqsAdapter>
     </BrowserRouter>
   );

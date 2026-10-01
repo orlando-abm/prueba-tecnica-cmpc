@@ -46,27 +46,27 @@ export default function BooksPage() {
   const [confirm, setConfirm] = useState<ConfirmState>({ mode: 'closed' });
 
   const [filters, setFilters] = useQueryStates({
-    q:           parseAsString.withDefault(''),
-    page:        parseAsInteger.withDefault(1),
-    limit:       parseAsInteger.withDefault(20),
-    status:      parseAsStringLiteral(['active', 'inactive', 'all'] as const).withDefault('active'),
-    genreId:     parseAsString.withDefault(''),
-    authorId:    parseAsString.withDefault(''),
-    publisherId: parseAsString.withDefault(''),
-    available:   parseAsStringLiteral(['true', 'false', ''] as const).withDefault(''),
-    sortBy:      parseAsStringLiteral(['title', 'price', 'stock', 'year', 'createdAt'] as const).withDefault('title'),
-    order:       parseAsStringLiteral(['asc', 'desc'] as const).withDefault('asc'),
+    q:         parseAsString.withDefault(''),
+    page:      parseAsInteger.withDefault(1),
+    limit:     parseAsInteger.withDefault(20),
+    status:    parseAsStringLiteral(['active', 'inactive', 'all'] as const).withDefault('active'),
+    genre:     parseAsString.withDefault(''),
+    author:    parseAsString.withDefault(''),
+    publisher: parseAsString.withDefault(''),
+    available: parseAsStringLiteral(['true', 'false', ''] as const).withDefault(''),
+    sortBy:    parseAsStringLiteral(['title', 'price', 'stock', 'year', 'createdAt'] as const).withDefault('title'),
+    order:     parseAsStringLiteral(['asc', 'desc'] as const).withDefault('asc'),
   }, { history: 'replace', shallow: true });
 
-  const { q: search, page, limit, status, genreId, authorId, publisherId, available, sortBy, order } = filters;
+  const { q: search, page, limit, status, genre: genreSlug, author: authorSlug, publisher: publisherSlug, available, sortBy, order } = filters;
 
-  function setSearch(val: string)           { setFilters({ q: val || null, page: null }); }
-  function setPage(val: number)             { setFilters({ page: val > 1 ? val : null }); }
-  function setLimit(val: number)            { setFilters({ limit: val !== 20 ? val : null, page: null }); }
-  function setStatus(val: StatusFilter)     { setFilters({ status: val !== 'active' ? val : null, page: null }); }
-  function setGenreId(val: string)          { setFilters({ genreId: val || null, page: null }); }
-  function setAuthorId(val: string)         { setFilters({ authorId: val || null, page: null }); }
-  function setPublisherId(val: string)      { setFilters({ publisherId: val || null, page: null }); }
+  function setSearch(val: string)             { setFilters({ q: val || null, page: null }); }
+  function setPage(val: number)               { setFilters({ page: val > 1 ? val : null }); }
+  function setLimit(val: number)              { setFilters({ limit: val !== 20 ? val : null, page: null }); }
+  function setStatus(val: StatusFilter)       { setFilters({ status: val !== 'active' ? val : null, page: null }); }
+  function setGenreSlug(val: string)          { setFilters({ genre: val || null, page: null }); }
+  function setAuthorSlug(val: string)         { setFilters({ author: val || null, page: null }); }
+  function setPublisherSlug(val: string)      { setFilters({ publisher: val || null, page: null }); }
   function setAvailable(val: AvailableFilter) { setFilters({ available: val || null, page: null }); }
 
   const debouncedSearch = useDebounce(search, 400);
@@ -88,14 +88,24 @@ export default function BooksPage() {
   const { data: authorsData } = useAuthors({ status: 'active', limit: 100 });
   const { data: publishersData } = usePublishers({ status: 'active', limit: 100 });
 
+  // Options usan slug como value para la URL semántica
+  const genreOptions     = (genresData?.items ?? []).map((g) => ({ value: g.slug, label: g.name }));
+  const authorOptions    = (authorsData?.items ?? []).map((a) => ({ value: a.slug, label: a.name }));
+  const publisherOptions = (publishersData?.items ?? []).map((p) => ({ value: p.slug, label: p.name }));
+
+  // Resuelve slug → id para la query a la API
+  const genreId     = genresData?.items.find((g) => g.slug === genreSlug)?.id;
+  const authorId    = authorsData?.items.find((a) => a.slug === authorSlug)?.id;
+  const publisherId = publishersData?.items.find((p) => p.slug === publisherSlug)?.id;
+
   const { data, isLoading } = useBooks({
     search: activeSearch,
     page,
     limit,
     status,
-    genreId: genreId || undefined,
-    authorId: authorId || undefined,
-    publisherId: publisherId || undefined,
+    genreId,
+    authorId,
+    publisherId,
     available: available || undefined,
     sortBy,
     order,
@@ -106,16 +116,9 @@ export default function BooksPage() {
   const restoreBook = useRestoreBook();
   const exportBooks = useExportBooks();
 
-  const genreOptions = (genresData?.items ?? []).map((g) => ({ value: g.id, label: g.name }));
-  const authorOptions = (authorsData?.items ?? []).map((a) => ({ value: a.id, label: a.name }));
-  const publisherOptions = (publishersData?.items ?? []).map((p) => ({
-    value: p.id,
-    label: p.name,
-  }));
-
-  const activeGenreName = genreOptions.find((o) => o.value === genreId)?.label;
-  const activeAuthorName = authorOptions.find((o) => o.value === authorId)?.label;
-  const activePublisherName = publisherOptions.find((o) => o.value === publisherId)?.label;
+  const activeGenreName     = genreOptions.find((o) => o.value === genreSlug)?.label;
+  const activeAuthorName    = authorOptions.find((o) => o.value === authorSlug)?.label;
+  const activePublisherName = publisherOptions.find((o) => o.value === publisherSlug)?.label;
 
   function closeModal() {
     setModal({ open: false });
@@ -145,15 +148,15 @@ export default function BooksPage() {
   }
 
   function clearFilters() {
-    setFilters({ q: null, page: null, limit: null, status: null, genreId: null, authorId: null, publisherId: null, available: null, sortBy: null, order: null });
+    setFilters({ q: null, page: null, limit: null, status: null, genre: null, author: null, publisher: null, available: null, sortBy: null, order: null });
   }
 
   const hasFilters =
     status !== 'active' ||
     debouncedSearch.length >= 3 ||
-    !!genreId ||
-    !!authorId ||
-    !!publisherId ||
+    !!genreSlug ||
+    !!authorSlug ||
+    !!publisherSlug ||
     !!available;
 
   const columns = useBookColumns({
@@ -224,15 +227,15 @@ export default function BooksPage() {
           {/* Genre select */}
           <div className="w-36">
             <SearchSelect
-              value={genreId}
+              value={genreSlug}
               options={genreOptions}
               placeholder="Género"
               onChange={(val) => {
-                setGenreId(val);
+                setGenreSlug(val);
                 setPage(1);
               }}
               onClear={() => {
-                setGenreId('');
+                setGenreSlug('');
                 setPage(1);
               }}
             />
@@ -241,15 +244,15 @@ export default function BooksPage() {
           {/* Author select */}
           <div className="w-36">
             <SearchSelect
-              value={authorId}
+              value={authorSlug}
               options={authorOptions}
               placeholder="Autor"
               onChange={(val) => {
-                setAuthorId(val);
+                setAuthorSlug(val);
                 setPage(1);
               }}
               onClear={() => {
-                setAuthorId('');
+                setAuthorSlug('');
                 setPage(1);
               }}
             />
@@ -258,15 +261,15 @@ export default function BooksPage() {
           {/* Publisher select */}
           <div className="w-36">
             <SearchSelect
-              value={publisherId}
+              value={publisherSlug}
               options={publisherOptions}
               placeholder="Editorial"
               onChange={(val) => {
-                setPublisherId(val);
+                setPublisherSlug(val);
                 setPage(1);
               }}
               onClear={() => {
-                setPublisherId('');
+                setPublisherSlug('');
                 setPage(1);
               }}
             />
@@ -337,13 +340,13 @@ export default function BooksPage() {
                 </button>
               </span>
             )}
-            {genreId && (
+            {genreSlug && (
               <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-warning-bg border border-warning-text/20 text-xs font-semibold font-sans text-warning-text">
                 {activeGenreName}
                 <button
                   type="button"
                   onClick={() => {
-                    setGenreId('');
+                    setGenreSlug('');
                     setPage(1);
                   }}
                   className="cursor-pointer hover:opacity-70"
@@ -352,13 +355,13 @@ export default function BooksPage() {
                 </button>
               </span>
             )}
-            {authorId && (
+            {authorSlug && (
               <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-info-bg border border-info/20 text-xs font-semibold font-sans text-info-text">
                 {activeAuthorName}
                 <button
                   type="button"
                   onClick={() => {
-                    setAuthorId('');
+                    setAuthorSlug('');
                     setPage(1);
                   }}
                   className="cursor-pointer hover:opacity-70"
@@ -367,13 +370,13 @@ export default function BooksPage() {
                 </button>
               </span>
             )}
-            {publisherId && (
+            {publisherSlug && (
               <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-info-bg border border-info/20 text-xs font-semibold font-sans text-info-text">
                 {activePublisherName}
                 <button
                   type="button"
                   onClick={() => {
-                    setPublisherId('');
+                    setPublisherSlug('');
                     setPage(1);
                   }}
                   className="cursor-pointer hover:opacity-70"

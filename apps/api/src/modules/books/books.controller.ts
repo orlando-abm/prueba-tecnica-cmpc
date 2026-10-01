@@ -53,13 +53,13 @@ export class BooksController {
   @ExportCsvDoc()
   async exportCsv(
     @Query() filters: BookFiltersDto,
-    @Res({ passthrough: true }) res: Response,
-  ): Promise<string> {
+    @Res() res: Response,
+  ): Promise<void> {
     this.logger.info('GET /books/export/csv');
     const csv = await this.booksService.exportCsv(filters);
     res.setHeader('Content-Type', 'text/csv; charset=utf-8');
     res.setHeader('Content-Disposition', 'attachment; filename="libros.csv"');
-    return csv;
+    res.send(csv);
   }
 
   @Get('slug/:slug')
