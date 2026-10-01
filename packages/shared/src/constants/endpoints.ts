@@ -3,6 +3,10 @@ export const ENDPOINTS = {
     login: '/auth/login',
     register: '/auth/register',
   },
+  users: {
+    me: '/users/me',
+    changePassword: '/users/me/password',
+  },
   genres: {
     findAll: '/genres',
     findById: (id: string) => `/genres/${id}`,

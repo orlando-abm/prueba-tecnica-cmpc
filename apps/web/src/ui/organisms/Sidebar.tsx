@@ -41,17 +41,24 @@ export function Sidebar() {
       </div>
 
       {/* Footer usuario */}
-      <div className="flex items-center gap-3 px-1">
+      <NavLink
+        to="/profile"
+        className={({ isActive }) =>
+          `flex items-center gap-3 px-1 rounded-lg py-1 transition-colors ${
+            isActive ? 'opacity-100' : 'hover:opacity-80'
+          }`
+        }
+      >
         <div className="w-8 h-8 rounded-full bg-accent flex items-center justify-center shrink-0">
           <span className="text-white text-xs font-bold font-sans">A</span>
         </div>
         <div className="flex flex-col min-w-0">
           <span className="text-text-primary-dark text-xs font-semibold font-sans truncate">
-            Admin CMPC
+            Mi perfil
           </span>
-          <span className="text-text-secondary-dark text-[11px] font-sans">Administrador</span>
+          <span className="text-text-secondary-dark text-[11px] font-sans">Ver cuenta</span>
         </div>
-      </div>
+      </NavLink>
     </aside>
   );
 }

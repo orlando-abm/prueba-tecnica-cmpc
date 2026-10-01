@@ -6,3 +6,4 @@ export { Modal } from './Modal';
 export { ConfirmModal } from './ConfirmModal';
 export { Select } from './Select';
 export { SearchSelect } from './SearchSelect';
+export { Toaster } from './Toast';

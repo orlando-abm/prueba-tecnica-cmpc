@@ -10,11 +10,25 @@ export class UsersRepository {
     return this.prisma.user.findUnique({ where: { id } });
   }
 
+  findByIdWithProfile(id: string) {
+    return this.prisma.user.findUnique({
+      where: { id },
+      include: { profile: true },
+    });
+  }
+
   findByEmail(email: string) {
     return this.prisma.user.findUnique({ where: { email } });
   }
 
   create(data: RegisterDto) {
     return this.prisma.user.create({ data });
+  }
+
+  updatePassword(id: string, hashedPassword: string) {
+    return this.prisma.user.update({
+      where: { id },
+      data: { password: hashedPassword },
+    });
   }
 }

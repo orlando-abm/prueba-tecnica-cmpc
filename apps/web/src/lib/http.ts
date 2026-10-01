@@ -28,6 +28,8 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     ...init,
   });
 
+  if (res.status === 204) return undefined as T;
+
   const body: ApiResponse<T> = await res.json();
 
   if (!res.ok || !body.success)

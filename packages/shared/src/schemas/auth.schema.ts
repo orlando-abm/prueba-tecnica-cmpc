@@ -20,3 +20,11 @@ export const UserProfileSchema = z.object({
   avatarUrl: z.string().url().optional(),
 });
 export type UserProfileDto = z.infer<typeof UserProfileSchema>;
+
+export const ChangePasswordSchema = z.object({
+  currentPassword: z.string().min(1, 'La contraseña actual es requerida'),
+  newPassword: z
+    .string()
+    .min(8, 'La nueva contraseña debe tener al menos 8 caracteres'),
+});
+export type ChangePasswordDto = z.infer<typeof ChangePasswordSchema>;

@@ -3,4 +3,5 @@ export const AUTH_ERRORS = {
   INVALID_CREDENTIALS: { code: 'AUTH_002', message: 'Correo o contraseña incorrectos' },
   UNAUTHORIZED: { code: 'AUTH_003', message: 'No autorizado' },
   TOKEN_EXPIRED: { code: 'AUTH_004', message: 'La sesión ha expirado' },
+  WRONG_PASSWORD: { code: 'AUTH_005', message: 'Contraseña actual incorrecta' },
 } as const;

@@ -16,6 +16,7 @@ import { useGenreColumns } from './useGenreColumns';
 import { Button, Input, Modal, Select, ConfirmModal } from '@/ui/atoms';
 import { Table, Pagination } from '@/ui/organisms';
 import { ApiError } from '@/lib/http';
+import { useToastStore } from '@/store/toast.store';
 
 type ModalState = { mode: 'closed' } | { mode: 'create' } | { mode: 'edit'; genre: Genre };
 
@@ -39,6 +40,7 @@ export default function GenresPage() {
   const [status, setStatus] = useState<StatusFilter>('active');
   const [modal, setModal] = useState<ModalState>({ mode: 'closed' });
   const [confirm, setConfirm] = useState<ConfirmState>({ mode: 'closed' });
+  const toast = useToastStore((s) => s.toast);
 
   const debouncedSearch = useDebounce(search, 400);
   const activeSearch = debouncedSearch.length >= 3 ? debouncedSearch : undefined;
@@ -76,11 +78,19 @@ export default function GenresPage() {
 
   async function onSubmit(dto: GenreBodyDto) {
     try {
-      if (modal.mode === 'create') await createGenre.mutateAsync(dto);
-      else if (modal.mode === 'edit') await updateGenre.mutateAsync({ id: modal.genre.id, dto });
+      if (modal.mode === 'create') {
+        await createGenre.mutateAsync(dto);
+        toast('success', 'Género creado correctamente');
+      } else if (modal.mode === 'edit') {
+        await updateGenre.mutateAsync({ id: modal.genre.id, dto });
+        toast('success', 'Género actualizado correctamente');
+      }
       closeModal();
     } catch (err) {
-      if (err instanceof ApiError) setError('name', { message: err.error.message });
+      if (err instanceof ApiError) {
+        setError('name', { message: err.error.message });
+        toast('error', err.error.message);
+      }
     }
   }
 
@@ -88,9 +98,13 @@ export default function GenresPage() {
     try {
       if (confirm.mode === 'delete') {
         await deleteGenre.mutateAsync(confirm.genre.id);
+        toast('success', 'Género eliminado');
       } else if (confirm.mode === 'restore') {
         await restoreGenre.mutateAsync(confirm.genre.id);
+        toast('success', 'Género activado');
       }
+    } catch (err) {
+      toast('error', err instanceof ApiError ? err.error.message : 'Ocurrió un error inesperado');
     } finally {
       setConfirm({ mode: 'closed' });
     }

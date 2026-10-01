@@ -10,6 +10,7 @@ import { usePublishers, useCreatePublisher } from '@/hooks/usePublishers';
 import { uploadService } from '@/services/upload.service';
 import { Button, Input, Modal, SearchSelect } from '@/ui/atoms';
 import { ApiError } from '@/lib/http';
+import { useToastStore } from '@/store/toast.store';
 import { ImageDropzone } from './ImageDropzone';
 
 interface BookFormModalProps {
@@ -40,6 +41,7 @@ function BookFormInner({
   onSuccess,
 }: Pick<BookFormModalProps, 'book' | 'onClose' | 'onSuccess'>) {
   const [uploading, setUploading] = useState(false);
+  const toast = useToastStore((s) => s.toast);
 
   const createBook = useCreateBook();
   const updateBook = useUpdateBook();
@@ -107,6 +109,7 @@ function BookFormInner({
     } catch (err) {
       if (err instanceof ApiError) {
         const message = err.error.message;
+        toast('error', message);
         switch (err.error.code) {
           case 'BOOK_002':
           case 'BOOK_006':

@@ -16,6 +16,7 @@ import { useAuthorColumns } from './useAuthorColumns';
 import { Button, Input, Modal, Select, ConfirmModal } from '@/ui/atoms';
 import { Table, Pagination } from '@/ui/organisms';
 import { ApiError } from '@/lib/http';
+import { useToastStore } from '@/store/toast.store';
 
 type ModalState = { mode: 'closed' } | { mode: 'create' } | { mode: 'edit'; author: Author };
 
@@ -39,6 +40,7 @@ export default function AuthorsPage() {
   const [status, setStatus] = useState<StatusFilter>('active');
   const [modal, setModal] = useState<ModalState>({ mode: 'closed' });
   const [confirm, setConfirm] = useState<ConfirmState>({ mode: 'closed' });
+  const toast = useToastStore((s) => s.toast);
 
   const debouncedSearch = useDebounce(search, 400);
   const activeSearch = debouncedSearch.length >= 3 ? debouncedSearch : undefined;
@@ -76,11 +78,19 @@ export default function AuthorsPage() {
 
   async function onSubmit(dto: AuthorBodyDto) {
     try {
-      if (modal.mode === 'create') await createAuthor.mutateAsync(dto);
-      else if (modal.mode === 'edit') await updateAuthor.mutateAsync({ id: modal.author.id, dto });
+      if (modal.mode === 'create') {
+        await createAuthor.mutateAsync(dto);
+        toast('success', 'Autor creado correctamente');
+      } else if (modal.mode === 'edit') {
+        await updateAuthor.mutateAsync({ id: modal.author.id, dto });
+        toast('success', 'Autor actualizado correctamente');
+      }
       closeModal();
     } catch (err) {
-      if (err instanceof ApiError) setError('name', { message: err.error.message });
+      if (err instanceof ApiError) {
+        setError('name', { message: err.error.message });
+        toast('error', err.error.message);
+      }
     }
   }
 
@@ -88,9 +98,13 @@ export default function AuthorsPage() {
     try {
       if (confirm.mode === 'delete') {
         await deleteAuthor.mutateAsync(confirm.author.id);
+        toast('success', 'Autor eliminado');
       } else if (confirm.mode === 'restore') {
         await restoreAuthor.mutateAsync(confirm.author.id);
+        toast('success', 'Autor activado');
       }
+    } catch (err) {
+      toast('error', err instanceof ApiError ? err.error.message : 'Ocurrió un error inesperado');
     } finally {
       setConfirm({ mode: 'closed' });
     }

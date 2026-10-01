@@ -9,6 +9,8 @@ import { useAuthors } from '@/hooks/useAuthors';
 import { usePublishers } from '@/hooks/usePublishers';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useBookStore } from '@/store/bookStore';
+import { useToastStore } from '@/store/toast.store';
+import { ApiError } from '@/lib/http';
 import { useBookColumns } from './useBookColumns';
 import { BookCard } from './BookCard';
 import { BookFormModal } from './BookFormModal';
@@ -44,6 +46,7 @@ export default function BooksPage() {
   const [view, setView] = useState<ViewMode>('grid');
   const [modal, setModal] = useState<ModalState>({ open: false });
   const [confirm, setConfirm] = useState<ConfirmState>({ mode: 'closed' });
+  const toast = useToastStore((s) => s.toast);
 
   const [filters, setFilters] = useQueryStates({
     q:         parseAsString.withDefault(''),
@@ -124,13 +127,23 @@ export default function BooksPage() {
     setModal({ open: false });
   }
 
+  function handleBookSuccess(_book: Book) {
+    const isEdit = modal.open && modal.book !== null;
+    toast('success', isEdit ? 'Libro actualizado correctamente' : 'Libro creado correctamente');
+    closeModal();
+  }
+
   async function handleConfirm() {
     try {
       if (confirm.mode === 'delete') {
         await deleteBook.mutateAsync(confirm.book.id);
+        toast('success', 'Libro eliminado');
       } else if (confirm.mode === 'restore') {
         await restoreBook.mutateAsync(confirm.book.id);
+        toast('success', 'Libro activado');
       }
+    } catch (err) {
+      toast('error', err instanceof ApiError ? err.error.message : 'Ocurrió un error inesperado');
     } finally {
       setConfirm({ mode: 'closed' });
     }
@@ -504,7 +517,12 @@ export default function BooksPage() {
       />
 
       {/* Modal crear / editar */}
-      <BookFormModal open={modal.open} book={modal.open ? modal.book : null} onClose={closeModal} />
+      <BookFormModal
+        open={modal.open}
+        book={modal.open ? modal.book : null}
+        onClose={closeModal}
+        onSuccess={handleBookSuccess}
+      />
     </div>
   );
 }

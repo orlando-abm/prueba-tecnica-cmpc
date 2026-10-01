@@ -16,6 +16,7 @@ import { usePublisherColumns } from './usePublisherColumns';
 import { Button, Input, Modal, Select, ConfirmModal } from '@/ui/atoms';
 import { Table, Pagination } from '@/ui/organisms';
 import { ApiError } from '@/lib/http';
+import { useToastStore } from '@/store/toast.store';
 
 type ModalState = { mode: 'closed' } | { mode: 'create' } | { mode: 'edit'; publisher: Publisher };
 
@@ -39,6 +40,7 @@ export default function PublishersPage() {
   const [status, setStatus] = useState<StatusFilter>('active');
   const [modal, setModal] = useState<ModalState>({ mode: 'closed' });
   const [confirm, setConfirm] = useState<ConfirmState>({ mode: 'closed' });
+  const toast = useToastStore((s) => s.toast);
 
   const debouncedSearch = useDebounce(search, 400);
   const activeSearch = debouncedSearch.length >= 3 ? debouncedSearch : undefined;
@@ -76,12 +78,19 @@ export default function PublishersPage() {
 
   async function onSubmit(dto: PublisherBodyDto) {
     try {
-      if (modal.mode === 'create') await createPublisher.mutateAsync(dto);
-      else if (modal.mode === 'edit')
+      if (modal.mode === 'create') {
+        await createPublisher.mutateAsync(dto);
+        toast('success', 'Editorial creada correctamente');
+      } else if (modal.mode === 'edit') {
         await updatePublisher.mutateAsync({ id: modal.publisher.id, dto });
+        toast('success', 'Editorial actualizada correctamente');
+      }
       closeModal();
     } catch (err) {
-      if (err instanceof ApiError) setError('name', { message: err.error.message });
+      if (err instanceof ApiError) {
+        setError('name', { message: err.error.message });
+        toast('error', err.error.message);
+      }
     }
   }
 
@@ -89,9 +98,13 @@ export default function PublishersPage() {
     try {
       if (confirm.mode === 'delete') {
         await deletePublisher.mutateAsync(confirm.publisher.id);
+        toast('success', 'Editorial eliminada');
       } else if (confirm.mode === 'restore') {
         await restorePublisher.mutateAsync(confirm.publisher.id);
+        toast('success', 'Editorial activada');
       }
+    } catch (err) {
+      toast('error', err instanceof ApiError ? err.error.message : 'Ocurrió un error inesperado');
     } finally {
       setConfirm({ mode: 'closed' });
     }
