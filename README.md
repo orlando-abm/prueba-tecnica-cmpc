@@ -542,3 +542,59 @@ Esto permite reutilizar un hook en múltiples páginas y testear cada capa de fo
 
 ### Arquitectura modular NestJS
 Cada recurso (auth, books, authors, genres, publishers, users, audit, storage) es un módulo NestJS independiente. Los módulos se componen en `AppModule` sin acoplamiento directo entre ellos, lo que permite agregar o remover funcionalidades sin efecto cascada.
+
+---
+
+## Funcionalidades no completadas
+
+### Roles y perfiles de usuario
+
+El modelo de datos incluye `role` (`SUPER_ADMIN`, `ADMIN`, `USER`) y `UserProfile`, pero el control de acceso basado en roles no se implementó en esta entrega por tiempo.
+
+**Cómo se implementaría en producción:**
+
+**Backend — guard de roles en NestJS:**
+```ts
+// Decorator para declarar qué roles tienen acceso
+@SetMetadata('roles', ['ADMIN', 'SUPER_ADMIN'])
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Delete(':id')
+softDelete(@Param('id') id: string) { ... }
+
+// RolesGuard lee el rol del JWT y lo compara con el metadata
+@Injectable()
+export class RolesGuard implements CanActivate {
+  canActivate(ctx: ExecutionContext): boolean {
+    const required = this.reflector.get<string[]>('roles', ctx.getHandler());
+    const user = ctx.switchToHttp().getRequest().user;
+    return required.includes(user.role);
+  }
+}
+```
+
+**Frontend — rutas protegidas por rol:**
+```tsx
+// Guard en el router que verifica el rol del usuario
+function RoleGuard({ roles }: { roles: string[] }) {
+  const { data: me } = useMe();
+  if (!me) return <Navigate to="/login" replace />;
+  if (!roles.includes(me.role)) return <Navigate to="/books" replace />;
+  return <Outlet />;
+}
+
+// En App.tsx
+<Route element={<RoleGuard roles={['ADMIN', 'SUPER_ADMIN']} />}>
+  <Route path="/audit" element={<AuditLogsPage />} />
+</Route>
+```
+
+**Frontend — UI condicional según rol:**
+```tsx
+// Ocultar botones de edición/eliminación a usuarios de solo lectura
+const { data: me } = useMe();
+const canEdit = me?.role === 'ADMIN' || me?.role === 'SUPER_ADMIN';
+
+{canEdit && <Button onClick={onEdit}>Editar</Button>}
+```
+
+La estructura del código actual (JWT con `role` en el payload, módulo `users` con `getMe`, `UserProfile` en BD) está preparada para agregar este control sin cambios de arquitectura.

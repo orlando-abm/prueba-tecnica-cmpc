@@ -76,8 +76,8 @@ export const ConOrdenamiento: Story = {
     }
 
     const sorted = [...libros].sort((a, b) => {
-      const va = String((a as Record<string, unknown>)[sortBy] ?? '');
-      const vb = String((b as Record<string, unknown>)[sortBy] ?? '');
+      const va = String((a as unknown as Record<string, unknown>)[sortBy] ?? '');
+      const vb = String((b as unknown as Record<string, unknown>)[sortBy] ?? '');
       return order === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va);
     });
 

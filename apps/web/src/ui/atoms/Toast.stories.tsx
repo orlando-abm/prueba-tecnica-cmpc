@@ -19,13 +19,13 @@ export const Interactivo: Story = {
       <div className="flex gap-3">
         <Button
           variant="success"
-          onClick={() => toast('Libro creado exitosamente', 'success')}
+          onClick={() => toast('success', 'Libro creado exitosamente')}
         >
           Toast éxito
         </Button>
         <Button
           variant="destructive"
-          onClick={() => toast('Error al eliminar el libro', 'error')}
+          onClick={() => toast('error', 'Error al eliminar el libro')}
         >
           Toast error
         </Button>

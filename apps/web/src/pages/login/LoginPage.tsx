@@ -10,12 +10,14 @@ import { Checkbox } from '@/ui/atoms/Checkbox';
 import { useLogin } from '@/hooks/useLogin';
 import { ApiError } from '@/lib/http';
 import { useAuthStore } from '@/store/auth.store';
+import { useNavigate } from 'react-router';
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [remember, setRemember] = useState(false);
   const login = useLogin();
   const setToken = useAuthStore((s) => s.setToken);
+  const navigate = useNavigate();
 
   const {
     register,
@@ -30,6 +32,7 @@ export default function LoginPage() {
     try {
       const res = await login.mutateAsync(data);
       setToken(res.token, remember);
+      navigate('/books', { replace: true });
     } catch (error) {
       if (error instanceof ApiError) {
         setError('root', { message: error.error.message });
