@@ -30,6 +30,7 @@ Sistema de gestión de inventario de libros para la tienda CMPC. Permite adminis
 Levanta toda la aplicación (BD, MinIO, API, web) con un solo comando:
 
 ```bash
+cp apps/api/.env.example apps/api/.env
 docker compose up --build
 ```
 
@@ -40,7 +41,15 @@ docker compose up --build
 | Swagger | http://localhost:3000/docs |
 | MinIO Console | http://localhost:9001 |
 
-> Las migraciones corren automáticamente al iniciar la API.
+> Las migraciones y el seed corren automáticamente al iniciar la API.
+
+Si por alguna razón necesitas correrlos manualmente:
+
+```bash
+pnpm install
+pnpm db:migrate
+pnpm db:seed
+```
 
 ---
 

@@ -13,7 +13,8 @@ RUN pnpm deploy --filter api --prod --legacy /deploy
 FROM ghcr.io/pnpm/pnpm:12 AS runner
 RUN pnpm runtime set node 26 -g
 COPY --from=build /deploy /app
+COPY --from=build /app/apps/api/prisma /app/prisma
 WORKDIR /app
 ENV NODE_ENV=production
 EXPOSE 3000
-CMD ["node", "dist/main.js"]
+CMD ["sh", "-c", "npx prisma migrate deploy && npx prisma db seed && node dist/main.js"]
