@@ -77,19 +77,25 @@ cp apps/api/.env.example apps/api/.env
 cp apps/web/.env.example apps/web/.env
 ```
 
-### 4. Correr migraciones
+### 4. Compilar paquetes
+
+```bash
+pnpm build
+```
+
+### 5. Correr migraciones
 
 ```bash
 pnpm db:migrate
 ```
 
-### 5. Poblar la base de datos
+### 6. Poblar la base de datos
 
 ```bash
 pnpm db:seed
 ```
 
-### 6. Levantar en modo desarrollo
+### 7. Levantar en modo desarrollo
 
 ```bash
 pnpm dev
