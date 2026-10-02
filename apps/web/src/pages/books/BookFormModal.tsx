@@ -158,7 +158,7 @@ function BookFormInner({
           {...register('title')}
         />
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <SearchSelect
             label="Autor"
             value={formAuthorId}
@@ -193,7 +193,7 @@ function BookFormInner({
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <SearchSelect
             label="Género"
             value={formGenreId}
@@ -219,7 +219,7 @@ function BookFormInner({
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <Input
             label="Stock"
             inputMode="numeric"
@@ -236,7 +236,7 @@ function BookFormInner({
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <Input
             label="Páginas"
             inputMode="numeric"
@@ -252,7 +252,7 @@ function BookFormInner({
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <Input
             label="ISBN"
             placeholder="Opcional"

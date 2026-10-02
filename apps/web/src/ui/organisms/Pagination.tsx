@@ -50,7 +50,7 @@ export function Pagination({
   const pages = getPageRange(page, totalPages);
 
   return (
-    <div className="flex items-center justify-between w-full">
+    <div className="flex flex-col sm:flex-row items-center justify-between w-full gap-3">
       {/* Rows per page */}
       <div className="flex items-center gap-2" ref={ref}>
         <span className="text-[13px] font-sans text-text-secondary">Filas por página:</span>

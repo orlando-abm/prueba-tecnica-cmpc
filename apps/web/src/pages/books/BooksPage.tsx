@@ -198,7 +198,7 @@ export default function BooksPage() {
       <div className="flex flex-col gap-3">
         <div className="flex items-center gap-3 flex-wrap">
           {/* Search pill */}
-          <div className="flex-1 max-w-sm">
+          <div className="w-full sm:flex-1 sm:max-w-sm">
             <Input
               placeholder="Buscar libro..."
               value={search}
@@ -307,7 +307,7 @@ export default function BooksPage() {
           </Button>
 
           {/* View toggle */}
-          <div className="flex items-center gap-0.5 rounded-lg border-[1.5px] border-border-light bg-surface-light p-0.5 ml-auto">
+          <div className="hidden sm:flex items-center gap-0.5 rounded-lg border-[1.5px] border-border-light bg-surface-light p-0.5 ml-auto">
             <button
               type="button"
               onClick={() => setView('table')}
@@ -438,9 +438,9 @@ export default function BooksPage() {
           </div>
         )}
 
-        {/* Table view */}
-        {view === 'table' ? (
-          <div className="bg-surface-light rounded-xl border border-border-light overflow-hidden">
+        {/* Table view — sm+ only */}
+        {view === 'table' && (
+          <div className="hidden sm:block bg-surface-light rounded-xl border border-border-light overflow-hidden">
             {isLoading ? (
               <div className="py-16 text-center text-text-secondary font-sans text-sm">
                 Cargando...
@@ -458,31 +458,31 @@ export default function BooksPage() {
               />
             )}
           </div>
-        ) : (
-          /* Grid view */
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-            {isLoading ? (
-              Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="h-72 rounded-xl bg-border-light animate-pulse" />
-              ))
-            ) : (data?.items.length ?? 0) === 0 ? (
-              <div className="col-span-full py-16 text-center text-text-secondary font-sans text-sm">
-                No se encontraron libros.
-              </div>
-            ) : (
-              (data?.items ?? []).map((book) => (
-                <BookCard
-                  key={book.id}
-                  book={book}
-                  onOpen={openBook}
-                  onEdit={(b) => setModal({ open: true, book: b })}
-                  onDelete={(b) => setConfirm({ mode: 'delete', book: b })}
-                  onRestore={(b) => setConfirm({ mode: 'restore', book: b })}
-                />
-              ))
-            )}
-          </div>
         )}
+
+        {/* Grid view — always on mobile, sm+ only when view === 'grid' */}
+        <div className={`grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 ${view === 'table' ? 'sm:hidden' : ''}`}>
+          {isLoading ? (
+            Array.from({ length: 8 }).map((_, i) => (
+              <div key={i} className="h-72 rounded-xl bg-border-light animate-pulse" />
+            ))
+          ) : (data?.items.length ?? 0) === 0 ? (
+            <div className="col-span-full py-16 text-center text-text-secondary font-sans text-sm">
+              No se encontraron libros.
+            </div>
+          ) : (
+            (data?.items ?? []).map((book) => (
+              <BookCard
+                key={book.id}
+                book={book}
+                onOpen={openBook}
+                onEdit={(b) => setModal({ open: true, book: b })}
+                onDelete={(b) => setConfirm({ mode: 'delete', book: b })}
+                onRestore={(b) => setConfirm({ mode: 'restore', book: b })}
+              />
+            ))
+          )}
+        </div>
 
         {/* Pagination */}
         {data && (

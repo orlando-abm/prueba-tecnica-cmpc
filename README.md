@@ -31,7 +31,7 @@ Levanta toda la aplicación (BD, MinIO, API, web) con un solo comando:
 
 ```bash
 cp apps/api/.env.example apps/api/.env
-docker compose up --build
+docker compose up -d --build
 ```
 
 | Servicio | URL |

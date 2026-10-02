@@ -126,26 +126,27 @@ export default function AuthorsPage() {
   });
 
   return (
-    <div className="p-10 flex flex-col gap-6">
+    <div className="p-6 sm:p-10 flex flex-col gap-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0">
           <h1 className="font-serif text-3xl font-bold text-text-primary">Autores</h1>
           <p className="font-sans text-sm text-text-secondary mt-1">
             {data ? `${data.total} autores` : ' '}
           </p>
         </div>
-        <Button onClick={openCreate}>
+        <Button onClick={openCreate} className="shrink-0">
           <Plus size={16} className="mr-2" />
-          Nuevo autor
+          <span className="hidden sm:inline">Nuevo autor</span>
+          <span className="sm:hidden">Nuevo</span>
         </Button>
       </div>
 
-      {/* Toolbar + tabla — mismo gap interno que entre search y chips */}
+      {/* Toolbar + tabla */}
       <div className="flex flex-col gap-3">
-        <div className="flex items-center gap-3">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
           {/* Search pill */}
-          <div className="flex-1 max-w-sm">
+          <div className="flex-1 sm:max-w-sm">
             <Input
               placeholder="Buscar autor..."
               value={search}
@@ -173,7 +174,7 @@ export default function AuthorsPage() {
           </div>
 
           {/* Status select */}
-          <div className="w-40">
+          <div className="w-full sm:w-40">
             <Select
               value={status}
               options={STATUS_OPTIONS}

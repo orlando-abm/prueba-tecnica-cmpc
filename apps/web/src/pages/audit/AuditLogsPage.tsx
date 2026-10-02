@@ -125,26 +125,24 @@ export default function AuditLogsPage() {
   }
 
   return (
-    <div className="p-10 flex flex-col gap-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="font-serif text-3xl font-bold text-text-primary">Auditoría</h1>
-          <p className="font-sans text-sm text-text-secondary mt-1">
-            {data ? `${data.total} registros` : ' '}
-          </p>
-        </div>
+    <div className="p-6 sm:p-10 flex flex-col gap-6">
+      <div>
+        <h1 className="font-serif text-3xl font-bold text-text-primary">Auditoría</h1>
+        <p className="font-sans text-sm text-text-secondary mt-1">
+          {data ? `${data.total} registros` : ' '}
+        </p>
       </div>
 
       <div className="flex flex-col gap-3">
-        <div className="flex items-center gap-3">
-          <div className="w-48">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+          <div className="w-full sm:w-48">
             <Select
               value={action}
               options={ACTION_OPTIONS}
               onChange={(val) => { setAction(val); setPage(1); }}
             />
           </div>
-          <div className="w-48">
+          <div className="w-full sm:w-48">
             <Select
               value={entity}
               options={ENTITY_OPTIONS}
@@ -163,7 +161,7 @@ export default function AuditLogsPage() {
           )}
         </div>
 
-        <div className="bg-surface-light rounded-xl border border-border-light overflow-hidden">
+        <div className="bg-surface-light rounded-xl border border-border-light overflow-x-auto">
           {isLoading ? (
             <div className="py-16 text-center text-text-secondary font-sans text-sm">
               Cargando...

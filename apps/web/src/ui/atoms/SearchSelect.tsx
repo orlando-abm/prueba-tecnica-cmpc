@@ -161,14 +161,16 @@ export function SearchSelect({
                   type="button"
                   disabled={adding}
                   onClick={handleAdd}
-                  className="w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm font-sans text-accent font-semibold hover:bg-accent/10 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm font-sans text-accent font-semibold hover:bg-accent/10 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden"
                 >
                   {adding ? (
                     <Loader2 size={14} className="animate-spin shrink-0" />
                   ) : (
                     <Plus size={14} className="shrink-0" />
                   )}
-                  {search.trim() ? `Crear "${search.trim()}"` : 'Crear nuevo'}
+                  <span className="truncate min-w-0">
+                    {search.trim() ? `Crear "${search.trim()}"` : 'Crear nuevo'}
+                  </span>
                 </button>
               </div>
             )}

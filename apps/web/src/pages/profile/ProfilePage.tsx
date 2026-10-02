@@ -58,7 +58,7 @@ export default function ProfilePage() {
     : null;
 
   return (
-    <div className="p-10 flex flex-col items-center gap-8">
+    <div className="p-6 sm:p-10 flex flex-col items-center gap-8">
       <div className="w-full max-w-xl">
         <h1 className="font-serif text-3xl font-bold text-text-primary">Mi perfil</h1>
         <p className="font-sans text-sm text-text-secondary mt-1">
@@ -72,7 +72,7 @@ export default function ProfilePage() {
         {isLoading ? (
           <p className="text-sm text-text-secondary font-sans">Cargando...</p>
         ) : user ? (
-          <dl className="grid grid-cols-2 gap-x-8 gap-y-4">
+          <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
             {fullName && (
               <div className="col-span-2 flex flex-col gap-1">
                 <dt className="text-xs font-sans text-text-secondary">Nombre</dt>
