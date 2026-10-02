@@ -159,6 +159,13 @@ Scripts adicionales dentro de `apps/api`:
 | `pnpm test:cov` | Tests con reporte de cobertura |
 | `pnpm test:e2e` | Tests end-to-end |
 
+Scripts dentro de `apps/web`:
+
+| Comando | Descripción |
+|---------|-------------|
+| `pnpm --filter web storybook` | Levanta Storybook en http://localhost:6006 |
+| `pnpm --filter web build-storybook` | Genera build estático de Storybook |
+
 ---
 
 ## Testing
@@ -249,6 +256,32 @@ http://localhost:3000/docs
 ```
 
 Para autenticarse en Swagger: ejecutar `POST /auth/login`, copiar el `token` de la respuesta y pegarlo en el botón **Authorize** (esquema Bearer).
+
+---
+
+## Storybook
+
+Catálogo visual de componentes UI. Permite explorar e interactuar con cada componente de forma aislada, sin necesidad de levantar la aplicación completa.
+
+```bash
+pnpm --filter web storybook
+# http://localhost:6006
+```
+
+### Componentes documentados
+
+| Categoría | Componente | Stories |
+|-----------|-----------|---------|
+| Atoms | Button | Primary, Secondary, Ghost, Destructive, Success, Disabled, WithIcon, AllVariants |
+| Atoms | Badge | Disponible, SinStock, Género, Info, Eliminado, AllVariants |
+| Atoms | Input | Default, WithError, WithStartIcon, WithEndIcon, Disabled |
+| Atoms | Checkbox | Unchecked, Checked, SinLabel, Interactivo |
+| Atoms | Select | Default, ConValor, ConError, Disabled, Interactivo |
+| Atoms | Modal | Abierto, Cerrado, Interactivo |
+| Atoms | Toast | Interactivo (dispara toasts reales) |
+| Organisms | Table | Default, ConOrdenamiento, Vacía, SinClickFila |
+| Organisms | Pagination | Default, PaginaMitad, UltimaPagina, PocasPaginas, Interactivo |
+| Books | BookCard | Disponible, SinStock, Eliminado, ConImagen, TituloLargo |
 
 ---
 
