@@ -161,6 +161,85 @@ Scripts adicionales dentro de `apps/api`:
 
 ---
 
+## Testing
+
+### Ejecutar todos los tests
+
+```bash
+# Todos los paquetes (backend + frontend)
+pnpm test
+
+# Solo backend
+pnpm --filter api test
+
+# Solo frontend
+pnpm --filter web test
+```
+
+### Ejecutar con cobertura
+
+```bash
+# Backend
+pnpm --filter api test:cov
+
+# Frontend
+pnpm --filter web test:cov
+```
+
+### Cobertura actual
+
+| App | Statements | Branches | Functions | Lines |
+|-----|-----------|----------|-----------|-------|
+| Backend (API) | 92% | 80% | 86% | 92% |
+
+### Qué se prueba
+
+**Backend — tests unitarios de servicios** (lógica de negocio, sin base de datos):
+
+| Archivo | Casos cubiertos |
+|---------|----------------|
+| `books.service.spec.ts` | CRUD, soft delete, restore, exportación CSV, validación de relaciones, conflictos ISBN/SKU |
+| `genres.service.spec.ts` | CRUD, soft delete, restore, duplicados activos y eliminados |
+| `authors.service.spec.ts` | CRUD, soft delete, restore, duplicados activos y eliminados |
+| `publishers.service.spec.ts` | CRUD, soft delete, restore, duplicados activos y eliminados |
+| `auth.service.spec.ts` | Register (email duplicado), login (usuario inexistente, contraseña incorrecta, éxito) |
+| `audit.service.spec.ts` | Log sin userId, log con userId, paginación |
+
+**Backend — tests unitarios de controladores** (delegación al servicio):
+
+| Archivo | Casos cubiertos |
+|---------|----------------|
+| `books.controller.spec.ts` | Todos los endpoints, filtrado de includes permitidos |
+| `auth.controller.spec.ts` | Register y login |
+
+**Frontend — tests unitarios de servicios y hooks**:
+
+| Archivo | Casos cubiertos |
+|---------|----------------|
+| `http.spec.ts` | `ApiError`, headers de autorización, manejo de 204, errores de API |
+| `auth.service.spec.ts` | Login con credenciales correctas e incorrectas |
+| `books.service.spec.ts` | Todos los métodos: findAll, findBySlug, create, update, remove, restore, exportCsv |
+| `useDebounce.spec.ts` | Delay, cancelación de timer, delay personalizado |
+
+**Frontend — tests de componentes** (render real con jsdom):
+
+| Archivo | Casos cubiertos |
+|---------|----------------|
+| `LoginPage.spec.tsx` | Render del formulario, validación Zod, error de credenciales, estado cargando |
+| `BookCard.spec.tsx` | Badges por estado (Disponible / Sin stock / Eliminado), botones, stopPropagation |
+
+### Stack de testing
+
+| Herramienta | Uso |
+|-------------|-----|
+| [Vitest](https://vitest.dev/) | Test runner en ambas apps |
+| [@nestjs/testing](https://docs.nestjs.com/fundamentals/testing) | Módulos de prueba para NestJS |
+| [@testing-library/react](https://testing-library.com/react) | Render de componentes React |
+| [@testing-library/user-event](https://testing-library.com/) | Simulación de interacciones del usuario |
+| [jsdom](https://github.com/jsdom/jsdom) | DOM simulado para tests de frontend |
+
+---
+
 ## Documentación API
 
 La API está documentada con Swagger/OpenAPI y disponible en:
