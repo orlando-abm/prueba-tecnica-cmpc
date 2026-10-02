@@ -13,6 +13,7 @@ Sistema de gestión de inventario de libros para la tienda CMPC. Permite adminis
 | Almacenamiento | MinIO (S3-compatible) |
 | Monorepo | Turborepo + pnpm workspaces |
 | Infraestructura | Docker Compose |
+| Componentes | Storybook 10 |
 
 ---
 
