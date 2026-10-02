@@ -474,6 +474,22 @@ Se implementó JWT con expiración de 7 días. Un sistema de refresh tokens requ
 ### Soft delete
 Todos los recursos (libros, autores, géneros, editoriales) usan soft delete mediante campo `deleted_at`. Permite restaurar registros eliminados y mantiene integridad referencial sin perder datos históricos.
 
+### Transacciones
+Las operaciones críticas son atómicas por dos mecanismos:
+
+- **Registro de usuario:** `User` + `UserProfile` se crean con un nested `create` de Prisma, que internamente emite una única transacción implícita. Si cualquiera de los dos falla, el otro se revierte.
+- **Mutaciones de libros + auditoría:** el `AuditLog` se escribe de forma fire-and-forget (ver sección Auditoría) para no bloquear la respuesta. Si se requiriera garantía de atomicidad, el patrón sería:
+
+```ts
+await this.prisma.$transaction(async (tx) => {
+  const book = await tx.book.create({ data: dto });
+  await tx.auditLog.create({ data: { action, entity: 'Book', entityId: book.id } });
+  return book;
+});
+```
+
+El trade-off es latencia adicional y acoplamiento entre la operación de negocio y el log. Para este sistema el audit fire-and-forget es aceptable; en un contexto de compliance estricto se optaría por la transacción explícita.
+
 ### Auditoría
 Cada mutación (crear, editar, eliminar) registra un `AuditLog` con acción, entidad, ID, metadata y usuario responsable. La escritura es fire-and-forget para no bloquear la respuesta al cliente.
 
