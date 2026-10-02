@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 import { useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, BookOpen, Quote, Trash2 } from 'lucide-react';
+import { ArrowLeft, BookOpen, Quote, Trash2, RotateCcw } from 'lucide-react';
 import type { Book } from '@repo/shared/types/book.types';
 import { useBookDetail, BOOK_DETAIL_KEY } from '@/hooks/useBookDetail';
-import { useBooks, useDeleteBook } from '@/hooks/useBooks';
+import { useBooks, useDeleteBook, useRestoreBook } from '@/hooks/useBooks';
 import { useBookStore } from '@/store/bookStore';
 import { ApiError } from '@/lib/http';
 import { Badge, ConfirmModal } from '@/ui/atoms';
@@ -73,13 +73,17 @@ function TopBar({
   book,
   onEdit,
   onDelete,
+  onRestore,
   onBack,
 }: {
   book: Book;
   onEdit: () => void;
   onDelete: () => void;
+  onRestore: () => void;
   onBack: () => void;
 }) {
+  const isDeleted = !!book.deletedAt;
+
   return (
     <div className="flex items-center justify-between h-14 px-8 border-b border-border-light bg-surface-light shrink-0">
       <div className="flex items-center gap-2 min-w-0">
@@ -103,21 +107,34 @@ function TopBar({
         </span>
       </div>
       <div className="flex items-center gap-2 shrink-0">
-        <button
-          type="button"
-          onClick={onEdit}
-          className="inline-flex items-center justify-center rounded-lg px-4 py-2 text-xs font-semibold font-sans bg-text-primary text-white hover:opacity-90 transition-colors cursor-pointer"
-        >
-          Editar
-        </button>
-        <button
-          type="button"
-          onClick={onDelete}
-          className="inline-flex items-center justify-center gap-1.5 rounded-lg px-4 py-2 text-xs font-semibold font-sans border border-error bg-error-bg text-error-text hover:bg-error hover:text-white transition-colors cursor-pointer"
-        >
-          <Trash2 size={13} />
-          Eliminar
-        </button>
+        {!isDeleted && (
+          <button
+            type="button"
+            onClick={onEdit}
+            className="inline-flex items-center justify-center rounded-lg px-4 py-2 text-xs font-semibold font-sans bg-text-primary text-white hover:opacity-90 transition-colors cursor-pointer"
+          >
+            Editar
+          </button>
+        )}
+        {isDeleted ? (
+          <button
+            type="button"
+            onClick={onRestore}
+            className="inline-flex items-center justify-center gap-1.5 rounded-lg px-4 py-2 text-xs font-semibold font-sans border border-success bg-success-bg text-success-text hover:bg-success hover:text-white transition-colors cursor-pointer"
+          >
+            <RotateCcw size={13} />
+            Activar
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={onDelete}
+            className="inline-flex items-center justify-center gap-1.5 rounded-lg px-4 py-2 text-xs font-semibold font-sans border border-error bg-error-bg text-error-text hover:bg-error hover:text-white transition-colors cursor-pointer"
+          >
+            <Trash2 size={13} />
+            Eliminar
+          </button>
+        )}
       </div>
     </div>
   );
@@ -290,19 +307,31 @@ export default function BookDetailPage() {
 
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [restoreOpen, setRestoreOpen] = useState(false);
   const deleteBook = useDeleteBook();
+  const restoreBook = useRestoreBook();
 
   async function handleDelete() {
     if (!book) return;
     try {
       await deleteBook.mutateAsync(book.id);
-      navigate('/books');
+      queryClient.setQueryData([BOOK_DETAIL_KEY, slug], { ...book, deletedAt: new Date().toISOString() });
     } catch (err) {
-      if (err instanceof ApiError) {
-        window.alert(err.error.message);
-      }
+      if (err instanceof ApiError) window.alert(err.error.message);
     } finally {
       setDeleteOpen(false);
+    }
+  }
+
+  async function handleRestore() {
+    if (!book) return;
+    try {
+      const updated = await restoreBook.mutateAsync(book.id);
+      queryClient.setQueryData([BOOK_DETAIL_KEY, slug], updated);
+    } catch (err) {
+      if (err instanceof ApiError) window.alert(err.error.message);
+    } finally {
+      setRestoreOpen(false);
     }
   }
 
@@ -315,6 +344,7 @@ export default function BookDetailPage() {
         book={book}
         onEdit={() => setEditOpen(true)}
         onDelete={() => setDeleteOpen(true)}
+        onRestore={() => setRestoreOpen(true)}
         onBack={() => navigate('/books')}
       />
 
@@ -349,6 +379,17 @@ export default function BookDetailPage() {
         loading={deleteBook.isPending}
         onConfirm={handleDelete}
         onCancel={() => setDeleteOpen(false)}
+      />
+
+      <ConfirmModal
+        open={restoreOpen}
+        title="Activar libro"
+        description={`¿Quieres activar "${book.title}"?`}
+        confirmLabel="Sí, activar"
+        variant="success"
+        loading={restoreBook.isPending}
+        onConfirm={handleRestore}
+        onCancel={() => setRestoreOpen(false)}
       />
     </div>
   );
