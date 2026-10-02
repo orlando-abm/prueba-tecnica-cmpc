@@ -12,10 +12,10 @@ export function useBookDetail(slug: string) {
   const query = useQuery({
     queryKey: [BOOK_DETAIL_KEY, slug],
     queryFn: () => booksService.findBySlug(slug, ['genre', 'author', 'publisher']),
-    enabled: !hasData,
+    initialData: hasData ? selectedBook ?? undefined : undefined,
   });
 
-  const book = hasData ? selectedBook : (query.data ?? null);
+  const book = query.data ?? null;
   const isNotFound = query.isError && (query.error as ApiError)?.status === 404;
 
   return { book, isLoading: !book && query.isLoading, isNotFound };

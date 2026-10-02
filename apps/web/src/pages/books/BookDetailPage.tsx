@@ -7,6 +7,7 @@ import { useBookDetail, BOOK_DETAIL_KEY } from '@/hooks/useBookDetail';
 import { useBooks, useDeleteBook, useRestoreBook } from '@/hooks/useBooks';
 import { useBookStore } from '@/store/bookStore';
 import { ApiError } from '@/lib/http';
+import { useToastStore } from '@/store/toast.store';
 import { Badge, ConfirmModal } from '@/ui/atoms';
 import { BookCover } from './BookCover';
 import { BookFormModal } from './BookFormModal';
@@ -303,6 +304,7 @@ export default function BookDetailPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const setSelectedBook = useBookStore((s) => s.setSelectedBook);
+  const toast = useToastStore((s) => s.toast);
   const { book, isLoading, isNotFound } = useBookDetail(slug ?? '');
 
   const [editOpen, setEditOpen] = useState(false);
@@ -315,9 +317,12 @@ export default function BookDetailPage() {
     if (!book) return;
     try {
       await deleteBook.mutateAsync(book.id);
-      queryClient.setQueryData([BOOK_DETAIL_KEY, slug], { ...book, deletedAt: new Date().toISOString() });
+      const updated = { ...book, deletedAt: new Date().toISOString() };
+      queryClient.setQueryData([BOOK_DETAIL_KEY, slug], updated);
+      setSelectedBook(updated);
+      toast('success', 'Libro eliminado');
     } catch (err) {
-      if (err instanceof ApiError) window.alert(err.error.message);
+      toast('error', err instanceof ApiError ? err.error.message : 'Ocurrió un error inesperado');
     } finally {
       setDeleteOpen(false);
     }
@@ -328,8 +333,10 @@ export default function BookDetailPage() {
     try {
       const updated = await restoreBook.mutateAsync(book.id);
       queryClient.setQueryData([BOOK_DETAIL_KEY, slug], updated);
+      setSelectedBook(updated);
+      toast('success', 'Libro activado');
     } catch (err) {
-      if (err instanceof ApiError) window.alert(err.error.message);
+      toast('error', err instanceof ApiError ? err.error.message : 'Ocurrió un error inesperado');
     } finally {
       setRestoreOpen(false);
     }
